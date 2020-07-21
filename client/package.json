@@ -1,5 +1,5 @@
 {
-  "name": "gpg-tweets",
+  "name": "warbler-app",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
