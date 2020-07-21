@@ -1,28 +1,46 @@
 import React, { Component } from 'react';
-import FontAwesome from 'react-fontawesome';
 import io from 'socket.io-client';
-// import logo from './logo.svg';
+import FontAwesome from 'react-fontawesome';
 import './App.css';
+import { API_ENDPOINTS, SOCKET_EVENTS, URLS } from './constants';
+import Navigation from './components/Navigation';
+import { Request } from './helpers/request';
 
-const API_URL = 'http://127.0.0.1:3100';
-const socket = io(API_URL);
-
-class App extends Component {
-
+export default class App extends Component {
   constructor() {
     super();
+    // Database is LocalStorage
+    this.db = window.localStorage;
+    this.socket = io(URLS.API_SERVER);
+    this.popup = null;
     this.state = {
+      error: {},
       user: {},
+      profile: {},
       disabled: ''
     };
-    this.popup = null;
   }
 
   componentDidMount() {
-    socket.on('user', user => {
-      this.popup.close();
-      this.setState({ user });
-    });
+    this.socket
+      .on(SOCKET_EVENTS.ERROR, error => {
+        this.setState({ error });
+      })
+      .on(SOCKET_EVENTS.TWITTER_USER, user => {
+        this.popup.close();
+        this.setDb({
+          property: 'twitter.user',
+          value: user
+        });
+        this.setState({ user });
+      })
+    ;
+    // .on(SOCKET_EVENTS.TWITTER_USER_PROFILE, user => {
+    //   this.setDb({
+    //     property: 'twitter.profile',
+    //     value: user
+    //   });
+    // });
   }
 
   /**
@@ -30,8 +48,8 @@ class App extends Component {
    * if the user cloes the popup without authenticating
    */
   doCheckPopup() {
+    const { popup } = this.popup;
     const check = setInterval(() => {
-      const { popup } = this;
       if (!popup || popup.closed || popup.closed === undefined) {
         clearInterval(check);
         this.setState({ disabled: '' });
@@ -40,25 +58,58 @@ class App extends Component {
   }
 
   /**
+   * Clears out the user's info when the card is closed
+   */
+  doCloseCard() {
+    this.setDb({ property: 'twitter.user' });
+    this.setState({ user: {} });
+  }
+
+  /**
    * Launches the popup on the server and passes along the socket id
    * so it can be used to send back user data to the appropriate socket
    * on the connected client
    * @returns {Window}
    */
-  doOpenPopup() {
+  doOpenPopup({ url } = {}) {
     const width = 600;
     const height = 600;
     const left = (window.innerWidth / 2) - (width / 2);
     const top = (window.innerHeight / 2) - (height / 2);
 
-    const url = `${API_URL}/twitter?socketId=${socket.id}`;
-
     return window.open(url, '',
-      `toolbar=no, location=no, directories=no, status=no, menubar=no, 
-      scrollbars=no, resizable=no, copyhistory=no, width=${width}, 
+      `toolbar=no, location=no, directories=no, status=no, menubar=no,
+      scrollbars=no, resizable=no, copyhistory=no, width=${width},
       height=${height}, top=${top}, left=${left}`
     );
   }
+
+  // doProfile() {
+  //   const twitterUser = this.getDb({ property: 'twitter.user' });
+  //   if (twitterUser.username.length) {
+  //     fetch(Request.makeUrl({
+  //       host: URLS.API_SERVER,
+  //       uri: API_ENDPOINTS.TWITTER_GET_PROFILE,
+  //       requestParams: {
+  //         username: twitterUser.username,
+  //         socketId: this.socket.id,
+  //         oauth_token_key: twitterUser.oauth_token,
+  //         oauth_token_secret: twitterUser.oauth_token_secret
+  //       }
+  //     }), {
+  //       method: 'POST',
+  //       contentType: 'application/json',
+  //       accept: 'application/json'
+  //     })
+  //       .then(response => response.json())
+  //       .then(response => {
+  //         console.log(response);
+  //       })
+  //       .catch(err => {
+  //         console.log(err);
+  //       });
+  //   }
+  // }
 
   /**
    * Kicks off the processes of opening the popup on the server and listening
@@ -67,67 +118,83 @@ class App extends Component {
    */
   doStartAuth() {
     if (!this.state.disabled) {
-      this.popup = this.doOpenPopup();
+      this.popup = this.doOpenPopup({
+        url: Request.makeUrl({
+          host: URLS.API_SERVER,
+          uri: API_ENDPOINTS.TWITTER_AUTH,
+          requestParams: {
+            socketId: this.socket.id
+          }
+        })
+      });
       this.doCheckPopup();
       this.setState({ disabled: 'disabled' });
     }
   }
 
-  doCloseCard() {
-    this.setState({ user: {} });
+  /**
+   * Get a value from the Database
+   * @param property
+   * @returns {string|boolean}
+   */
+  getDb({ property } = {}) {
+    if (property.length) {
+      return JSON.parse(this.db.getItem(`warbler.${property}`));
+    }
+    console.log('Error: No db property defined to store');
+    return false;
   }
 
   render() {
-    const { name, photo } = this.state.user;
     const { disabled } = this.state;
+    const { message, code } = this.state.error;
+    const { username, displayName, photo } = this.state.user;
 
     return (
       <div className={'container'}>
-        {/* If there is a user, show the user */}
-        {/* Otherwise show the login button */}
-        {name
-         ? <div className={'card'}>
-           <img src={photo} alt={name}/>
-           <FontAwesome
-             name={'times-circle'}
-             className={'close'}
-             onClick={this.doCloseCard.bind(this)}
-           />
-           <h4>{`@${name}`}</h4>
-         </div>
-         : <div className={'button'}>
-           <button
-             onClick={this.doStartAuth.bind(this)}
-             className={`twitter ${disabled}`}
-           >
-             <FontAwesome
-               name={'twitter'}
-             />
-           </button>
-         </div>
+        <div className={'error'}>
+          {message ? <span>Error: {message} [{code}]</span> : ''}
+        </div>
+        <Navigation/>
+        {
+          username
+          ? <div className={'card'}>
+            <img
+              src={photo}
+              alt={username}
+              // onClick={this.doProfile.bind(this)}
+            />
+            <FontAwesome
+              name={'times-circle'}
+              className={'close'}
+              onClick={this.doCloseCard.bind(this)}
+            />
+            <h4>{`${displayName} (@${username})`}</h4>
+          </div>
+          : <div className={'button'}>
+            <button
+              onClick={this.doStartAuth.bind(this)}
+              className={`twitter ${disabled}`}
+            >
+              <FontAwesome name={'twitter'}/>
+            </button>
+          </div>
         }
       </div>
     );
+  }
 
-    /*return (
-     <div className="App">
-     <header className="App-header">
-     <img src={logo} className="App-logo" alt="logo"/>
-     <p>
-     Edit <code>src/App.js</code> and save to reload.
-     </p>
-     <a
-     className="App-link"
-     href="https://reactjs.org"
-     target="_blank"
-     rel="noopener noreferrer"
-     >
-     Learn React
-     </a>
-     </header>
-     </div>
-     );*/
+  /**
+   * Set a value to the Database
+   * @param property
+   * @param value
+   */
+  setDb({ property, value = undefined } = {}) {
+    if (property.length) {
+      this.db.setItem(`warbler.${property}`, JSON.stringify(value));
+      return true;
+    }
+    console.log('Error: No db property defined to store');
+    return false;
   }
 }
-
-export default App;
