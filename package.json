@@ -1,10 +1,10 @@
 {
   "name": "warbler-app-server",
   "version": "1.0.0",
-  "main": "warbler-server.js",
+  "main": "warblerServer.js",
   "scripts": {
     "client": "cd client && npm start",
-    "server": "nodemon warbler-server.js",
+    "server": "nodemon warblerServer.js",
     "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
   },
   "keywords": [],
@@ -20,8 +20,10 @@
     "font-awesome": "^4.7.0",
     "http": "0.0.1-security",
     "nodemon": "^2.0.4",
+    "oauth": "^0.9.15",
     "passport": "^0.4.1",
     "passport-twitter": "^1.0.4",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.3.0",
+    "twitter": "^1.7.1"
   }
 }
