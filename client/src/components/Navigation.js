@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
-import Profile from './Profile';
 
 export default class Navigation extends Component {
   constructor(props, context) {
@@ -13,19 +12,28 @@ export default class Navigation extends Component {
   render() {
     return (
       <Router>
-        <div>
-          <ul>
-            <li>
-              <Link to={'/'}>{'Warbler Home'}</Link>
-            </li>
-            <li>
-              <Link to={'/profile'}>{'Edit Profile'}</Link>
-            </li>
-          </ul>
-          <Switch>
-            <Route path={'/profile'} component={Profile}/>
-          </Switch>
-        </div>
+        <ul>
+          <li>
+            <Link to={'/'}>{'Warbler App'}</Link>
+          </li>
+          <li>
+            <Link to={'/feed'}>{'Warbler Feed'}</Link>
+          </li>
+          <li>
+            <Link to={'/settings'}>{'Settings'}</Link>
+          </li>
+        </ul>
+        <Switch>
+          <Route exact path={'/'}
+            // component={Home}
+          >{'Warbler App'}</Route>
+          <Route path={'/feed'}
+            // component={Feed}
+          >{'Warbler App'}</Route>
+          <Route path={'/settings'}
+            // component={Settings}
+          >{'Settings'}</Route>
+        </Switch>
       </Router>
     );
   }
