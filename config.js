@@ -9,6 +9,7 @@ exports.TWITTER_AUTH_CONFIG = {
 exports.TWITTER_CLIENT_CONFIG = {
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
   consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  bearer_token: process.env.TWITTER_BEARER_TOKEN,
   access_token_key: null,
   access_token_secret: null
 };
