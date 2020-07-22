@@ -10,7 +10,7 @@ const socketio = require('socket.io');
 require('dotenv').config();
 
 const { Strategy: TwitterStrategy } = require('passport-twitter');
-const { API_ENDPOINTS, SOCKET_EVENTS, URLS } = require('./client/src/constants');
+const { API_ENDPOINTS, DB_FIELDS, DB_TABLES, SOCKET_EVENTS, URLS } = require('./client/src/constants');
 const { TWITTER_AUTH_CONFIG, TWITTER_CLIENT_CONFIG } = require('./config');
 
 // Create the server and allow express and sockets to run on the same port
@@ -46,12 +46,9 @@ passport.deserializeUser((obj, cb) => cb(null, obj));
 passport.use(new TwitterStrategy(
   TWITTER_AUTH_CONFIG,
   (accessToken, refreshToken, profile, cb) => {
-    // console.log(profile);
     // save the user right here to a database if you want
     const user = {
-      username: profile.username,
-      displayName: profile.displayName,
-      photo: profile.photos[0].value.replace(/_normal/, '')
+      username: profile.username
     };
     cb(null, user);
   })
@@ -65,7 +62,6 @@ const twitterAuth = passport.authenticate('twitter');
  * and stores it in the session so we can send back the right info to the right socket
  */
 const addSocketId = (req, res, next) => {
-  console.log(req.query.socketId);
   req.session.socketId = req.query.socketId;
   next();
 };
@@ -83,38 +79,40 @@ app.get(API_ENDPOINTS.TWITTER_AUTH, addSocketId, twitterAuth);
  */
 app.get(API_ENDPOINTS.TWITTER_AUTH_CALLBACK, twitterAuth, (req, res) => {
   io.in(req.session.socketId)
-    .emit(SOCKET_EVENTS.TWITTER_USER, Object.assign({}, req.user, {
-      oauth_token: req.query.oauth_token,
-      oauth_verifier: req.query.oauth_verifier,
-      oauth_token_secret: JSON.parse(req.sessionStore.sessions[req.session.id])['oauth:twitter'].oauth_token_secret
-    }));
+    .emit(SOCKET_EVENTS.TWITTER_AUTH, {
+      tokens: {
+        [DB_FIELDS.TWITTER_TOKENS.OAUTH_TOKEN]: req.query.oauth_token,
+        [DB_FIELDS.TWITTER_TOKENS.OAUTH_TOKEN_SECRET]: JSON.parse(req.sessionStore.sessions[req.session.id])['oauth:twitter'].oauth_token_secret,
+        [DB_FIELDS.TWITTER_TOKENS.OAUTH_VERIFIER]: req.query.oauth_verifier
+      },
+      user: req.user
+    });
 
   res.end();
 });
 
-// app.post(API_ENDPOINTS.TWITTER_GET_PROFILE, addSocketId, (req, res) => {
-//   const socketConnection = io.in(req.session.socketId);
-//
-//   console.log(req.body);
+app.get(API_ENDPOINTS.TWITTER_GET_USER, addSocketId, (req, res) => {
+  const socketConnection = io.in(req.session.socketId);
 
-  // const client = new Twitter(Object.assign({}, TWITTER_CLIENT_CONFIG, {
-  //   access_token_key: req.oauth_token,
-  //   access_token_secret: req.oauth_token_secret
-  // }));
-  //
-  // client.get('/users/show', { screen_name: req.username }, (err, userObject, response) => {
-  //   if (err) {
-  //     console.log(err);
-  //     socketConnection.emit(SOCKET_EVENTS.ERROR, err);
-  //   } else {
-  //     console.log(userObject);
-  //     console.log(response);
-  //     socketConnection
-  //       .emit(SOCKET_EVENTS.TWITTER_GET_PROFILE, userObject);
-  //   }
-  // });
-//   res.end();
-// });
+  const client = new Twitter(Object.assign({}, TWITTER_CLIENT_CONFIG, {
+    access_token_key: req.query.oauth_token_key,
+    access_token_secret: req.query.oauth_token_secret
+  }));
+
+  client.get('/users/show', {
+    screen_name: req.query.username,
+    user_id: req.query.userid,
+    include_entities: true
+  }, (err, userObject, response) => {
+    if (err) {
+      socketConnection.emit(SOCKET_EVENTS.ERROR, err);
+    } else {
+      socketConnection
+        .emit(SOCKET_EVENTS.TWITTER_GET_USER, userObject);
+    }
+  });
+  res.end();
+});
 
 /**
  * Start the server
