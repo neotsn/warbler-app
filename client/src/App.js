@@ -50,7 +50,6 @@ export default class App extends Component {
         // This is a UserObject from twitter
         this.setState({ user });
       });
-    ;
   }
 
   /**
@@ -180,7 +179,6 @@ export default class App extends Component {
   render() {
     const { disabled, errors } = this.state;
     const { screen_name, name, profile_image_url_https } = this.state.user;
-    const avatar = (profile_image_url_https || '').replace(/_normal/, '');
 
     return (
       <div className={'container'}>
@@ -191,7 +189,7 @@ export default class App extends Component {
         {
           screen_name
           ? <div className={'card'}>
-            <img src={avatar} alt={screen_name}/>
+            <img src={profile_image_url_https.replace(/_normal/, '')} alt={screen_name}/>
             <FontAwesome
               name={'times-circle'}
               className={'close'}
