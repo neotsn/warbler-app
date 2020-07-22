@@ -58,10 +58,13 @@ export default class App extends Component {
    */
   constructExistingUser() {
     const tokens = this.getDb({ property: DB_TABLES.TWITTER_TOKENS });
-    const { username } = tokens;
 
-    if (username && username.length) {
-      this.requestUserObject({ username });
+    if (tokens && tokens.hasOwnProperty('username')) {
+      const { username } = tokens;
+
+      if (username && username.length) {
+        this.requestUserObject({ username });
+      }
     }
   }
 
@@ -177,7 +180,7 @@ export default class App extends Component {
   render() {
     const { disabled, errors } = this.state;
     const { screen_name, name, profile_image_url_https } = this.state.user;
-    const avatar = (profile_image_url_https || '').replace(/_normal/,'');
+    const avatar = (profile_image_url_https || '').replace(/_normal/, '');
 
     return (
       <div className={'container'}>
@@ -232,7 +235,7 @@ export default class App extends Component {
    * @param property
    * @param value
    */
-  setDb({ property, value = undefined } = {}) {
+  setDb({ property, value = '' } = {}) {
     if (property.length) {
       this.db.setItem(property, JSON.stringify(value));
       return true;
