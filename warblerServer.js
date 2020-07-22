@@ -91,6 +91,10 @@ app.get(API_ENDPOINTS.TWITTER_AUTH_CALLBACK, twitterAuth, (req, res) => {
   res.end();
 });
 
+/**
+ * Fetch the UserObject for the `username` or `userid` provided, and
+ * emit it back through the SOCKET_EVENTS.TWITTER_GET_USER event
+ */
 app.get(API_ENDPOINTS.TWITTER_GET_USER, addSocketId, (req, res) => {
   const socketConnection = io.in(req.session.socketId);
 
