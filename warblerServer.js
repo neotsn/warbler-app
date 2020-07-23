@@ -111,8 +111,7 @@ app.get(API_ENDPOINTS.TWITTER_GET_USER, addSocketId, (req, res) => {
     if (err) {
       socketConnection.emit(SOCKET_EVENTS.ERROR, err);
     } else {
-      socketConnection
-        .emit(SOCKET_EVENTS.TWITTER_GET_USER, userObject);
+      socketConnection.emit(SOCKET_EVENTS.TWITTER_GET_USER, userObject);
     }
   });
   res.end();
