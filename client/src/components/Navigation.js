@@ -1,40 +1,55 @@
-import React, { Component } from 'react';
-import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
+import React from 'react';
+import { Divider, Drawer, List, Toolbar, withStyles } from '@material-ui/core';
+import NavigationItem from './NavigationItem';
+import { Settings as SettingsIcon, ViewStream } from '@material-ui/icons';
 
-export default class Navigation extends Component {
-  constructor(props, context) {
-    super(props, context);
-    this.db = window.localStorage;
-    this.state = props.state;
-    this.socket = props.socket;
+const drawerWidth = 240;
+
+const styles = theme => ({
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 0
+  },
+  drawerPaper: {
+    width: drawerWidth
+  },
+  drawerContainer: {
+    overflow: 'auto'
+  }
+});
+
+/**
+ * Generate the Navigation Drawer for authenticated users
+ * @param classes
+ * @param props
+ * @returns {JSX.Element|null}
+ * @constructor
+ */
+const Navigation = (classes, props) => {
+  // Not Authenticated, no Navigation to display
+  if (!props.isAuthenticated) {
+    return null;
   }
 
-  render() {
-    return (
-      <Router>
-        <ul>
-          <li>
-            <Link to={'/'}>{'Warbler App'}</Link>
-          </li>
-          <li>
-            <Link to={'/feed'}>{'Warbler Feed'}</Link>
-          </li>
-          <li>
-            <Link to={'/settings'}>{'Settings'}</Link>
-          </li>
-        </ul>
-        <Switch>
-          <Route exact path={'/'}
-            // component={Home}
-          >{'Warbler App'}</Route>
-          <Route path={'/feed'}
-            // component={Feed}
-          >{'Warbler App'}</Route>
-          <Route path={'/settings'}
-            // component={Settings}
-          >{'Settings'}</Route>
-        </Switch>
-      </Router>
-    );
-  }
-}
+  return (
+    <Drawer
+      className={classes.drawer}
+      variant={'permanent'}
+      classes={{ paper: classes.drawerPaper }}
+    >
+      <Toolbar/>
+      <div className={classes.drawerContainer}>
+        <List>
+          <NavigationItem url={'/feed'} label={'Feed'} icon={<ViewStream/>}/>
+          <NavigationItem url={'/settings'} label={'Settings'} icon={<SettingsIcon/>}/>
+        </List>
+        <Divider/>
+        <List>
+          <NavigationItem url={'/logout'} label={'Logout'} icon={''}/>
+        </List>
+      </div>
+    </Drawer>
+  );
+};
+
+export default withStyles(styles)(Navigation);
