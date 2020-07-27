@@ -96,24 +96,29 @@ app.get(API_ENDPOINTS.TWITTER_AUTH_CALLBACK, twitterAuth, (req, res) => {
  * emit it back through the SOCKET_EVENTS.TWITTER_GET_USER event
  */
 app.get(API_ENDPOINTS.TWITTER_GET_USER, addSocketId, (req, res) => {
-  const socketConnection = io.in(req.session.socketId);
+  if (typeof req.session.socketId !== 'undefined' && req.session.socketId !== 'undefined') {
+    const socketConnection = io.in(req.session.socketId);
 
-  const client = new Twitter(Object.assign({}, TWITTER_CLIENT_CONFIG, {
-    access_token_key: req.query.oauth_token_key,
-    access_token_secret: req.query.oauth_token_secret
-  }));
+    const client = new Twitter(Object.assign({}, TWITTER_CLIENT_CONFIG, {
+      access_token_key: req.query.oauth_token_key,
+      access_token_secret: req.query.oauth_token_secret
+    }));
 
-  client.get('/users/show', {
-    screen_name: req.query.username,
-    user_id: req.query.userid,
-    include_entities: true
-  }, (err, userObject, response) => {
-    if (err) {
-      socketConnection.emit(SOCKET_EVENTS.ERROR, err);
-    } else {
-      socketConnection.emit(SOCKET_EVENTS.TWITTER_GET_USER, userObject);
-    }
-  });
+    client.get('/users/show', {
+      screen_name: req.query.username,
+      user_id: req.query.userid,
+      include_entities: true
+    }, (err, userObject, response) => {
+      if (err) {
+        socketConnection.emit(SOCKET_EVENTS.ERROR, err);
+      } else {
+        socketConnection.emit(SOCKET_EVENTS.TWITTER_GET_USER, userObject);
+      }
+    });
+  } else {
+    console.log('Error: Socket ID is missing.');
+  }
+
   res.end();
 });
 
