@@ -296,7 +296,6 @@ class App extends Component {
             <AppHeader>
               <LoginButton
                 isAuthenticated={isAuthenticated}
-                socket={this.socket}
                 user={user}
                 doLogin={this.auth.doLogin.bind(this)}
                 doLogout={this.auth.doLogout.bind(this)}
