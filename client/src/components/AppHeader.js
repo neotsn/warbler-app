@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { AppBar, Toolbar, Typography, withStyles } from '@material-ui/core';
-import LoginButton from './LoginButton';
 
 // Setup some styles using the theme settings
 const styles = theme => ({
@@ -31,7 +30,7 @@ class AppHeader extends Component {
             Warbler
           </Typography>
           <div className={headerButtons}>
-            <LoginButton initUser={this.props.initUser}/>
+            {this.props.children}
           </div>
         </Toolbar>
       </AppBar>
