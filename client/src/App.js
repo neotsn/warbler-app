@@ -68,8 +68,8 @@ class App extends Component {
         this.onErrors({ errors });
       })
       .on(SOCKET_EVENTS.TWITTER_AUTH, response => {
-        const { tokens, user } = response;
-        this.onTwitterAuth({ tokens, user });
+        const { tokens, userData } = response;
+        this.onTwitterAuth({ tokens, userData });
       })
       .on(SOCKET_EVENTS.TWITTER_GET_USER, user => {
         if (user) {
@@ -176,7 +176,7 @@ class App extends Component {
             uri: API_ENDPOINTS.TWITTER_GET_USER,
             requestParams: Object.assign(this.auth.buildTwitterClientCredentials(), { user_id })
           }))
-            .catch(err => { console.log(err); });
+            .catch(console.error);
         }
       }
     };
@@ -286,8 +286,8 @@ class App extends Component {
   /**
    * Handle the Twitter Authentication event
    */
-  onTwitterAuth = ({ tokens, user } = {}) => {
-    const { user_id, screen_name } = user;
+  onTwitterAuth = ({ tokens, userData } = {}) => {
+    const { user_id, screen_name } = userData;
 
     // Close the popup
     this.popup.window.close();

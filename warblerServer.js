@@ -50,7 +50,7 @@ passport.use(new TwitterStrategy(TWITTER_PASSPORT_CONFIG, (access_token_key, acc
       access_token_key,
       access_token_secret
     },
-    data: {
+    userData: {
       user_id: profile._json.id_str,
       screen_name: profile.username
     }
@@ -143,11 +143,7 @@ app.get(API_ENDPOINTS.TWITTER_AUTH, addSocketId, twitterAuth);
 app.get(API_ENDPOINTS.TWITTER_AUTH_CALLBACK, twitterAuth, (req, res) => {
   verifySocket(req, res, async (req, res) => {
     initSocket(req)
-      .emit(SOCKET_EVENTS.TWITTER_AUTH, {
-        // From Passport Twitter Strategy `done()` method, 2nd parameter
-        tokens: req.user.tokens,
-        user: req.user.data
-      });
+      .emit(SOCKET_EVENTS.TWITTER_AUTH, req.user);
   });
 });
 
