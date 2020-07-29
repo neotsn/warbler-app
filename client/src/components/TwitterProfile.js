@@ -14,6 +14,10 @@ export default class TwitterProfile extends Component {
     };
   }
 
+  componentDidMount() {
+    this.doProfileChange();
+  }
+
   componentDidUpdate() {
     this.doProfileChange();
   }
