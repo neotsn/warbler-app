@@ -4,17 +4,18 @@
 exports.API_ENDPOINTS = {
   TWITTER_AUTH: '/twitter',
   TWITTER_AUTH_CALLBACK: '/twitter/callback',
-  TWITTER_GET_USER: '/twitter/user/get'
+  TWITTER_REQUEST_CALLBACK: '/twitter/request-callback',
+  TWITTER_GET_USER: '/twitter/user/get',
+  TWITTER_UPDATE_USER: '/twitter/user/update'
 };
 
 /**
  * Export the field sets for each of the DB table names
- * @type {{TWITTER_TOKENS: {OAUTH_VERIFIER: string, OAUTH_TOKEN: string, OAUTH_TOKEN_SECRET: string}}}
  */
 exports.DB_FIELDS = {
   TWITTER_TOKENS: {
-    OAUTH_TOKEN: 'oauth_token',
-    OAUTH_TOKEN_SECRET: 'oauth_token_secret',
+    ACCESS_TOKEN_KEY: 'access_token_key',
+    ACCESS_TOKEN_SECRET: 'access_token_secret',
     OAUTH_VERIFIER: 'oauth_verifier'
   }
 };
@@ -32,7 +33,8 @@ exports.DB_TABLES = {
 exports.SOCKET_EVENTS = {
   ERROR: 'warbler.error',
   TWITTER_AUTH: 'warbler.twitter.auth',
-  TWITTER_GET_USER: 'warbler.twitter.get.user'
+  TWITTER_GET_USER: 'warbler.twitter.get.user',
+  TWITTER_UPDATE_USER: 'warbler.twitter.update.user'
 };
 
 /**

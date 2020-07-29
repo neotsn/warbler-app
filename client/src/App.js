@@ -67,15 +67,19 @@ class App extends Component {
       .on(SOCKET_EVENTS.ERROR, errors => {
         this.onErrors({ errors });
       })
-      .on(SOCKET_EVENTS.TWITTER_AUTH, data => {
-        this.onTwitterAuth({ data });
+      .on(SOCKET_EVENTS.TWITTER_AUTH, response => {
+        const { tokens, user } = response;
+        this.onTwitterAuth({ tokens, user });
       })
       .on(SOCKET_EVENTS.TWITTER_GET_USER, user => {
         if (user) {
           // This is a UserObject from twitter
-          this.setState({ user });
-          this.setState({ isAuthenticated: true });
+          this.setState({ user, isAuthenticated: true });
         }
+      })
+      .on(SOCKET_EVENTS.TWITTER_UPDATE_USER, user => {
+        // Update the user record in state with the changes sent to the server
+        this.setState({ user });
       });
   }
 
@@ -97,8 +101,8 @@ class App extends Component {
 
       return Object.assign({}, {
         socketId: this.socket.id,
-        oauth_token_key: tokens[DB_FIELDS.TWITTER_TOKENS.OAUTH_TOKEN] || null,
-        oauth_token_secret: tokens[DB_FIELDS.TWITTER_TOKENS.OAUTH_TOKEN_SECRET] || null
+        access_token_key: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_KEY] || null,
+        access_token_secret: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_SECRET] || null
       });
     };
 
@@ -152,7 +156,7 @@ class App extends Component {
      */
     this.auth.isAuthenticated = () => {
       const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
-      return (tokens && tokens.hasOwnProperty(DB_FIELDS.TWITTER_TOKENS.OAUTH_TOKEN_SECRET));
+      return (tokens && tokens.hasOwnProperty(DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_SECRET));
     };
 
     /**
@@ -163,14 +167,14 @@ class App extends Component {
       const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
 
       // Check that we've authenticated before
-      if (tokens && tokens.hasOwnProperty('username')) {
-        const { username } = tokens;
+      if (tokens && tokens.hasOwnProperty('user_id')) {
+        const { user_id } = tokens;
 
-        if (username && username.length) {
+        if (user_id && user_id.length) {
           fetch(Request.makeUrl({
             host: URLS.API_SERVER,
             uri: API_ENDPOINTS.TWITTER_GET_USER,
-            requestParams: Object.assign(this.auth.buildTwitterClientCredentials(), { username })
+            requestParams: Object.assign(this.auth.buildTwitterClientCredentials(), { user_id })
           }))
             .catch(err => { console.log(err); });
         }
@@ -190,7 +194,7 @@ class App extends Component {
        */
       get({ property } = {}) {
         if (property.length) {
-          return JSON.parse(window.localStorage.getItem(property));
+          return JSON.parse(window.localStorage.getItem(property)) || '';
         }
         console.log('Error: No db property defined to store');
         return false;
@@ -264,11 +268,26 @@ class App extends Component {
   };
 
   /**
+   * Handle sending the new profile data to the API Server
+   */
+  onProfileUpdate = ({ data } = {}) => {
+    const { description } = data;
+
+    fetch(Request.makeUrl({
+      host: URLS.API_SERVER,
+      uri: API_ENDPOINTS.TWITTER_UPDATE_USER,
+      requestParams: Object.assign(this.auth.buildTwitterClientCredentials(), { description })
+    }), {
+      method: 'POST'
+    })
+      .catch(console.error);
+  };
+
+  /**
    * Handle the Twitter Authentication event
    */
-  onTwitterAuth = ({ data } = {}) => {
-    const { tokens, user } = data;
-    const { username } = user;
+  onTwitterAuth = ({ tokens, user } = {}) => {
+    const { user_id, screen_name } = user;
 
     // Close the popup
     this.popup.window.close();
@@ -277,7 +296,7 @@ class App extends Component {
     this.db.set({
       property: DB_TABLES.TWITTER_TOKENS,
       // Inject the username to auto-login the user on revisit
-      value: Object.assign(tokens, { username })
+      value: Object.assign({}, tokens, { user_id, screen_name })
     });
 
     // Immediately go fetch the User Object...
@@ -309,7 +328,13 @@ class App extends Component {
               <Switch>
                 <Route exact path={'/'} component={Home}/>
                 <Route path={'/feed'} component={Feed}/>
-                <Route path={'/settings'} component={Settings}/>
+                <Route path={'/settings'} render={(props) => (
+                  <Settings
+                    {...props}
+                    user={this.state.user}
+                    onProfileUpdate={this.onProfileUpdate.bind(this)}
+                  />
+                )}/>
               </Switch>
             </main>
           </div>
