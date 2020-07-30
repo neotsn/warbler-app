@@ -11,6 +11,7 @@ import { API_ENDPOINTS, DB_FIELDS, DB_TABLES, SOCKET_EVENTS, URLS } from './cons
 import io from 'socket.io-client';
 import { Request } from './helpers/request';
 import LoginButton from './components/LoginButton';
+import TransitionAlert from './components/TransitionAlert';
 
 // Setup the custom colors
 const theme = createMuiTheme({
@@ -46,10 +47,11 @@ class App extends Component {
     this.classes = classes;
     this.socket = io(URLS.API_SERVER);
     this.state = {
-      errors: [],
       disabled: '',
-      user: {},
-      isAuthenticated: null
+      error: '',
+      success: '',
+      isAuthenticated: null,
+      user: {}
     };
 
     this.initDb();
@@ -64,8 +66,11 @@ class App extends Component {
     this.auth.checkAuthentication();
 
     this.socket
-      .on(SOCKET_EVENTS.ERROR, errors => {
-        this.onErrors({ errors });
+      .on(SOCKET_EVENTS.SUCCESS, success => {
+        this.setState({ success });
+      })
+      .on(SOCKET_EVENTS.ERROR, error => {
+        this.setState({ error });
       })
       .on(SOCKET_EVENTS.TWITTER_AUTH, response => {
         const { tokens, userData } = response;
@@ -255,19 +260,6 @@ class App extends Component {
   }
 
   /**
-   * Handle the Error event
-   */
-  onErrors = ({ errors } = {}) => {
-    const errorMessages = [];
-    Object.values(errors).forEach((error) => {
-      errorMessages.push(`Error: ${error.message} [${error.code}]`);
-    });
-    errorMessages.join('<br>');
-
-    this.setState({ errors: errorMessages });
-  };
-
-  /**
    * Handle sending the new profile data to the API Server
    */
   onProfileUpdate = ({ data } = {}) => {
@@ -321,7 +313,7 @@ class App extends Component {
 
   render() {
     const { root, content } = this.classes;
-    const { isAuthenticated, user } = this.state;
+    const { isAuthenticated, user, error, success } = this.state;
 
     return (
       <Fragment>
@@ -341,6 +333,12 @@ class App extends Component {
             />
             <main className={content}>
               <Toolbar/>
+              {success
+               ? <TransitionAlert severity={'success'} content={success}/>
+               : null}
+              {error
+               ? <TransitionAlert severity={'error'} content={`${error.message} [${error.code}]`}/>
+               : null}
               <Switch>
                 <Route exact path={'/'} component={Home}/>
                 <Route path={'/feed'} render={(props) => (
