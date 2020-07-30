@@ -32,6 +32,7 @@ exports.DB_TABLES = {
  */
 exports.SOCKET_EVENTS = {
   ERROR: 'warbler.error',
+  SUCCESS: 'warbler.success',
   TWITTER_AUTH: 'warbler.twitter.auth',
   TWITTER_USER_GET: 'warbler.twitter.get.user',
   TWITTER_USER_UPDATE: 'warbler.twitter.update.user'

@@ -108,22 +108,32 @@ const initClient = (req) => {
 /**
  * Handler for the error-exception response processing from twitter-lite
  */
-const onErrors = (socket, e) => {
+const onError = (socket, e) => {
   // Twitter Client will throw an exception if there is an error.
   // Catch it to handle consistently.
-  let error;
+  let error = {};
+
   if ('errors' in e) {
     // Twitter API error
     if (e.errors[0].code === 88) {
       // rate limit exceeded
-      error = 'Rate limit will reset on', new Date(e._headers.get('x-rate-limit-reset') * 1000);
+      error = {
+        message: `Rate limit will reset on ${new Date(e._headers.get('x-rate-limit-reset') * 1000)}`,
+        code: 88
+      };
     } else {
       // some other kind of error, e.g. read-only API trying to POST
-      error = 'There was a problem with the API call to Twitter';
+      error = {
+        message: e.errors[0].message,
+        code: e.errors[0].code
+      };
     }
   } else {
     // non-API error, e.g. network problem or invalid JSON in response
-    error = 'There was a problem with the network or response.';
+    error = {
+      message: 'There was a problem with the network or response.',
+      code: 9641
+    };
   }
 
   console.log(error, e);
@@ -171,7 +181,7 @@ app.get(API_ENDPOINTS.TWITTER_USER_GET, addSocketId, (req, res) => {
         return 'No User Object returned.';
       }
     } catch (e) {
-      onErrors(socket, e);
+      onError(socket, e);
     }
   });
 });
@@ -195,11 +205,12 @@ app.post(API_ENDPOINTS.TWITTER_USER_UPDATE, addSocketId, (req, res) => {
 
       if (userObject) {
         socket.emit(SOCKET_EVENTS.TWITTER_USER_UPDATE, userObject);
+        socket.emit(SOCKET_EVENTS.SUCCESS, 'Profile description successfully updated.');
       } else {
         return 'No User object returned';
       }
     } catch (e) {
-      onErrors(socket, e);
+      onError(socket, e);
     }
   });
 });
@@ -243,7 +254,7 @@ app.post(API_ENDPOINTS.TWITTER_STATUS_UPDATE, addSocketId, (req, res) => {
       console.log(tweetObject);
 
     } catch (e) {
-      onErrors(socket, e);
+      onError(socket, e);
     }
   });
 });
