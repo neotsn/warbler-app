@@ -4,9 +4,9 @@
 exports.API_ENDPOINTS = {
   TWITTER_AUTH: '/twitter',
   TWITTER_AUTH_CALLBACK: '/twitter/callback',
-  TWITTER_REQUEST_CALLBACK: '/twitter/request-callback',
-  TWITTER_GET_USER: '/twitter/user/get',
-  TWITTER_UPDATE_USER: '/twitter/user/update'
+  TWITTER_USER_GET: '/twitter/user/get',
+  TWITTER_USER_UPDATE: '/twitter/user/update',
+  TWITTER_STATUS_UPDATE: '/twitter/status/update'
 };
 
 /**
@@ -33,8 +33,8 @@ exports.DB_TABLES = {
 exports.SOCKET_EVENTS = {
   ERROR: 'warbler.error',
   TWITTER_AUTH: 'warbler.twitter.auth',
-  TWITTER_GET_USER: 'warbler.twitter.get.user',
-  TWITTER_UPDATE_USER: 'warbler.twitter.update.user'
+  TWITTER_USER_GET: 'warbler.twitter.get.user',
+  TWITTER_USER_UPDATE: 'warbler.twitter.update.user'
 };
 
 /**

@@ -5,6 +5,7 @@ const Twitter = require('twitter-lite');
 const session = require('express-session');
 const cors = require('cors');
 const socketio = require('socket.io');
+const twitterText = require('twitter-text');
 // Prepare for Environmental Variables
 require('dotenv').config();
 
@@ -149,9 +150,9 @@ app.get(API_ENDPOINTS.TWITTER_AUTH_CALLBACK, twitterAuth, (req, res) => {
 
 /**
  * Fetch the UserObject for the `username` or `userid` provided, and
- * emit it back through the SOCKET_EVENTS.TWITTER_GET_USER event
+ * emit it back through the SOCKET_EVENTS.TWITTER_USER_GET event
  */
-app.get(API_ENDPOINTS.TWITTER_GET_USER, addSocketId, (req, res) => {
+app.get(API_ENDPOINTS.TWITTER_USER_GET, addSocketId, (req, res) => {
   verifySocket(req, res, async (req, res) => {
     const socket = initSocket(req);
 
@@ -165,7 +166,7 @@ app.get(API_ENDPOINTS.TWITTER_GET_USER, addSocketId, (req, res) => {
         });
 
       if (userObject) {
-        socket.emit(SOCKET_EVENTS.TWITTER_GET_USER, userObject);
+        socket.emit(SOCKET_EVENTS.TWITTER_USER_GET, userObject);
       } else {
         return 'No User Object returned.';
       }
@@ -178,7 +179,7 @@ app.get(API_ENDPOINTS.TWITTER_GET_USER, addSocketId, (req, res) => {
 /**
  * Sends updated fields to the user update API
  */
-app.post(API_ENDPOINTS.TWITTER_UPDATE_USER, addSocketId, (req, res) => {
+app.post(API_ENDPOINTS.TWITTER_USER_UPDATE, addSocketId, (req, res) => {
   verifySocket(req, res, async (req, res) => {
     const socket = initSocket(req);
 
@@ -193,10 +194,54 @@ app.post(API_ENDPOINTS.TWITTER_UPDATE_USER, addSocketId, (req, res) => {
         });
 
       if (userObject) {
-        socket.emit(SOCKET_EVENTS.TWITTER_UPDATE_USER, userObject);
+        socket.emit(SOCKET_EVENTS.TWITTER_USER_UPDATE, userObject);
       } else {
         return 'No User object returned';
       }
+    } catch (e) {
+      onErrors(socket, e);
+    }
+  });
+});
+
+app.post(API_ENDPOINTS.TWITTER_STATUS_UPDATE, addSocketId, (req, res) => {
+  verifySocket(req, res, async (req, res) => {
+    const socket = initSocket(req);
+
+    try {
+      const { status, options } = req.query;
+      const client = initClient(req);
+
+      if (options.indexOf('thread') > -1) {
+
+        const { id_str } = tweetObject;
+        // const tweetObject = await client
+        //   .post('statuses/update', {
+        //     status,
+        //     auto_populate_reply_metadata: true,
+        //     trim_user: true,
+        //   });
+
+      } else if (options.indexOf('sign') > -1) {
+        // const tweetObject = await client
+        //   .post('statuses/update', {
+        //     status,
+        //     auto_populate_reply_metadata: true,
+        //     trim_user: true,
+        //   });
+      } else {
+        // const tweetObject = await client
+        //   .post('statuses/update', {
+        //     status,
+        //     auto_populate_reply_metadata: true,
+        //     trim_user: true,
+        //   });
+      }
+
+      const { id_str } = tweetObject;
+
+      console.log(tweetObject);
+
     } catch (e) {
       onErrors(socket, e);
     }

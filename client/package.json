@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.56",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
@@ -16,6 +17,7 @@
     "react-twitter-login": "^1.1.2",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",
+    "twitter-text": "^3.1.0",
     "typescript": "^3.9.7"
   },
   "proxy": "http://127.0.0.1:3100",

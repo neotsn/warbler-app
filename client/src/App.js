@@ -71,13 +71,13 @@ class App extends Component {
         const { tokens, userData } = response;
         this.onTwitterAuth({ tokens, userData });
       })
-      .on(SOCKET_EVENTS.TWITTER_GET_USER, user => {
+      .on(SOCKET_EVENTS.TWITTER_USER_GET, user => {
         if (user) {
           // This is a UserObject from twitter
           this.setState({ user, isAuthenticated: true });
         }
       })
-      .on(SOCKET_EVENTS.TWITTER_UPDATE_USER, user => {
+      .on(SOCKET_EVENTS.TWITTER_USER_UPDATE, user => {
         // Update the user record in state with the changes sent to the server
         this.setState({ user });
       });
@@ -173,7 +173,7 @@ class App extends Component {
         if (user_id && user_id.length) {
           fetch(Request.makeUrl({
             host: URLS.API_SERVER,
-            uri: API_ENDPOINTS.TWITTER_GET_USER,
+            uri: API_ENDPOINTS.TWITTER_USER_GET,
             requestParams: Object.assign(this.auth.buildTwitterClientCredentials(), { user_id })
           }))
             .catch(console.error);
@@ -275,8 +275,24 @@ class App extends Component {
 
     fetch(Request.makeUrl({
       host: URLS.API_SERVER,
-      uri: API_ENDPOINTS.TWITTER_UPDATE_USER,
-      requestParams: Object.assign(this.auth.buildTwitterClientCredentials(), { description })
+      uri: API_ENDPOINTS.TWITTER_USER_UPDATE,
+      requestParams: Object.assign({}, this.auth.buildTwitterClientCredentials(), { description })
+    }), {
+      method: 'POST'
+    })
+      .catch(console.error);
+  };
+
+  /**
+   * Handle sending the Tweet/Status Update
+   */
+  onStatusUpdate = ({ data } = {}) => {
+    const { status, options } = data;
+
+    fetch(Request.makeUrl({
+      host: URLS.API_SERVER,
+      uri: API_ENDPOINTS.TWITTER_STATUS_UPDATE,
+      requestParams: Object.assign({}, this.auth.buildTwitterClientCredentials(), { status, options })
     }), {
       method: 'POST'
     })
@@ -327,7 +343,13 @@ class App extends Component {
               <Toolbar/>
               <Switch>
                 <Route exact path={'/'} component={Home}/>
-                <Route path={'/feed'} component={Feed}/>
+                <Route path={'/feed'} render={(props) => (
+                  <Feed
+                    {...props}
+                    user={this.state.user}
+                    onStatusUpdate={this.onStatusUpdate.bind(this)}
+                  />
+                )}/>
                 <Route path={'/settings'} render={(props) => (
                   <Settings
                     {...props}
