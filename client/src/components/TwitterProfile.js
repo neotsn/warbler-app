@@ -41,7 +41,7 @@ export default class TwitterProfile extends Component {
     });
   };
 
-  onProfileSubmit = (e) => {
+  onSubmit = (e) => {
     e.preventDefault();
     this.props.onProfileUpdate({
       data: {
@@ -72,7 +72,7 @@ export default class TwitterProfile extends Component {
           variant={'contained'}
           color={'secondary'}
           startIcon={<Done/>}
-          onClick={this.onProfileSubmit}
+          onClick={this.onSubmit}
         >{'Save'}</Button>
       </div>
     );
