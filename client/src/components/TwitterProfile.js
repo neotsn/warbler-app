@@ -1,8 +1,30 @@
 import React, { Component } from 'react';
-import { Button, TextField } from '@material-ui/core';
+import { Button, Divider, Paper, TextField, withStyles } from '@material-ui/core';
 import { Done } from '@material-ui/icons';
+import twitterText from 'twitter-text';
 
-export default class TwitterProfile extends Component {
+const styles = (theme) => ({
+  paper: {
+    display: 'flex',
+    margin: '0 auto',
+    width: '50vw',
+    border: `1px solid ${theme.palette.divider}`,
+    flexWrap: 'wrap'
+  },
+  input: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1)
+  },
+  controls: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    width: '100%',
+    alignItems: 'center',
+    padding: theme.spacing(0, 1, 1)
+  }
+});
+
+class TwitterProfile extends Component {
   constructor({ classes, props } = {}) {
     super(props);
 
@@ -26,7 +48,7 @@ export default class TwitterProfile extends Component {
     if (!this.state.profile && this.state.profile !== this.props.user.description) {
       this.setState({
         profile: this.props.user.description,
-        characterCount: (this.props.user.description || '').length
+        characterCount: twitterText.parseTweet(this.props.user.description).weightedLength
       });
     }
   }
@@ -37,7 +59,7 @@ export default class TwitterProfile extends Component {
   onInputChange = (e) => {
     this.setState({
       profile: e.target.value,
-      characterCount: e.target.value.length
+      characterCount: twitterText.parseTweet(e.target.value).weightedLength
     });
   };
 
@@ -54,7 +76,10 @@ export default class TwitterProfile extends Component {
     const { profile, characterCount, maxCharacters } = this.state;
 
     return (
-      <div>
+      <Paper
+        elevation={1}
+        className={this.classes.paper}
+      >
         <TextField
           label={'Twitter Profile Description'}
           name={'twitter_user_description'}
@@ -67,15 +92,20 @@ export default class TwitterProfile extends Component {
           fullWidth={true}
           helperText={`${characterCount}/${maxCharacters}`}
           onChange={this.onInputChange}
+          className={this.classes.input}
         />
-        <Button
-          variant={'contained'}
-          color={'secondary'}
-          startIcon={<Done/>}
-          onClick={this.onSubmit}
-        >{'Save'}</Button>
-      </div>
+        <Divider/>
+        <div className={this.classes.controls}>
+          <Button
+            variant={'contained'}
+            color={'secondary'}
+            startIcon={<Done/>}
+            onClick={this.onSubmit}
+          >{'Save'}</Button>
+        </div>
+      </Paper>
     );
   }
 }
 
+export default withStyles(styles)(TwitterProfile);
