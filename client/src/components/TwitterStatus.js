@@ -22,7 +22,7 @@ const styles = (theme) => ({
     justifyContent: 'space-between',
     width: '100%',
     alignItems: 'center',
-    padding: theme.spacing(0, 1)
+    padding: theme.spacing(0, 1, 1)
   }
 });
 
