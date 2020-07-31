@@ -21,6 +21,7 @@
     "http": "0.0.1-security",
     "nodemon": "^2.0.4",
     "oauth": "^0.9.15",
+    "openpgp": "^4.10.7",
     "passport": "^0.4.1",
     "passport-twitter": "^1.0.4",
     "socket.io": "^2.3.0",
