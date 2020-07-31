@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Divider, Paper, TextField, withStyles } from '@material-ui/core';
+import { Button, Divider, Paper, TextField, Typography, withStyles } from '@material-ui/core';
 import { Done } from '@material-ui/icons';
 import twitterText from 'twitter-text';
 
@@ -9,7 +9,8 @@ const styles = (theme) => ({
     margin: '0 auto',
     width: '50vw',
     border: `1px solid ${theme.palette.divider}`,
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    padding: theme.spacing(1)
   },
   input: {
     marginLeft: theme.spacing(1),
@@ -19,8 +20,7 @@ const styles = (theme) => ({
     display: 'flex',
     justifyContent: 'flex-end',
     width: '100%',
-    alignItems: 'center',
-    padding: theme.spacing(0, 1, 1)
+    alignItems: 'center'
   }
 });
 
@@ -46,9 +46,21 @@ class TwitterProfile extends Component {
 
   doProfileChange() {
     if (!this.state.profile && this.state.profile !== this.props.user.description) {
+
+      // Pull the description and entities, to replace the URLs in the description
+      const { description, entities } = this.props.user;
+
+      let profile = description;
+
+      if (entities && entities.hasOwnProperty('description') && entities.description.hasOwnProperty('urls') && entities.description.urls.length) {
+        Object.values(entities.description.urls).forEach(urlData => {
+          profile = profile.replace(urlData.url, urlData.display_url);
+        });
+      }
+
       this.setState({
-        profile: this.props.user.description,
-        characterCount: twitterText.parseTweet(this.props.user.description).weightedLength
+        profile: profile,
+        characterCount: twitterText.parseTweet(description).weightedLength
       });
     }
   }
@@ -80,6 +92,8 @@ class TwitterProfile extends Component {
         elevation={1}
         className={this.classes.paper}
       >
+        <Typography variant={'h6'}>Twitter Settings</Typography>
+        <br/>
         <TextField
           label={'Twitter Profile Description'}
           name={'twitter_user_description'}
