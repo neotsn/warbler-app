@@ -35,7 +35,8 @@ exports.SOCKET_EVENTS = {
   SUCCESS: 'warbler.success',
   TWITTER_AUTH: 'warbler.twitter.auth',
   TWITTER_USER_GET: 'warbler.twitter.get.user',
-  TWITTER_USER_UPDATE: 'warbler.twitter.update.user'
+  TWITTER_USER_UPDATE: 'warbler.twitter.update.user',
+  WARNING: 'warbler.warning'
 };
 
 /**
