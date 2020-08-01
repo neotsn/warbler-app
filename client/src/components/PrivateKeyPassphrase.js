@@ -17,20 +17,21 @@ class PrivateKeyPassphrase extends Component {
 
     this.classes = classes;
     this.state = {
-      password: '',
-      showPassword: false
+      passphrase: '',
+      showPassphrase: false
     };
   }
 
   onChange = (e) => {
-    this.setState({ password: e.currentTarget.value });
+    this.setState({ passphrase: e.currentTarget.value });
+    this.props.onChangePassphrase({ passphrase: e.currentTarget.value });
   };
 
-  onClickShowPassword = () => {
-    this.setState({ showPassword: !this.state.showPassword });
+  onClickShowPassphrase = () => {
+    this.setState({ showPassphrase: !this.state.showPassphrase });
   };
 
-  onMouseDownPassword = (e) => {
+  onMouseDownPassphrase = (e) => {
     e.preventDefault();
   };
 
@@ -40,18 +41,18 @@ class PrivateKeyPassphrase extends Component {
         <InputLabel htmlFor={'private-key-passphrase'}>Private Key Passphrase</InputLabel>
         <OutlinedInput
           id={'private-key-passphrase'}
-          type={this.state.showPassword ? 'text' : 'password'}
-          value={this.state.password}
+          type={this.state.showPassphrase ? 'text' : 'password'}
+          value={this.state.passphrase}
           onChange={this.onChange}
           endAdornment={
             <InputAdornment position={'end'}>
               <IconButton
-                aria-label={'toggle password visibility'}
-                onClick={this.onClickShowPassword}
-                onMouseDown={this.onMouseDownPassword}
+                aria-label={'toggle passphrase visibility'}
+                onClick={this.onClickShowPassphrase}
+                onMouseDown={this.onMouseDownPassphrase}
                 edge={'end'}
               >
-                {this.state.showPassword ? <Visibility/> : <VisibilityOff/>}
+                {this.state.showPassphrase ? <Visibility/> : <VisibilityOff/>}
               </IconButton>
             </InputAdornment>
           }
