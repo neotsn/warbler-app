@@ -23,7 +23,6 @@ class UserIdRow extends Component {
 
   onChangeEmail = (e) => {
     const { index, name } = this.props;
-    console.log(this.props);
     this.props.onChangeUserId({
       index,
       name,
@@ -33,7 +32,6 @@ class UserIdRow extends Component {
 
   onChangeName = (e) => {
     const { index, email } = this.props;
-    console.log(this.props);
     this.props.onChangeUserId({
       index,
       name: e.currentTarget.value,
