@@ -50,6 +50,6 @@
     ]
   },
   "resolutions": {
-    "xmldom": "0.7.0"
+    "@xmldom/xmldom": "^0.8.0"
   }
 }
