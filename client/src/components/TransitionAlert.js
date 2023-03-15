@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Alert } from '@material-ui/lab';
-import { Collapse, IconButton, withStyles } from '@material-ui/core';
-import { Close } from '@material-ui/icons';
+import { Alert } from '@mui/lab';
+import { Collapse, IconButton } from '@mui/material';
+import { withStyles } from '@mui/styles';
+import { Close } from '@mui/icons-material';
 
 const styles = theme => ({
   root: {

@@ -9,14 +9,19 @@ const twitterText = require('twitter-text');
 // Prepare for Environmental Variables
 require('dotenv').config();
 
-const { Strategy: TwitterStrategy } = require('passport-twitter');
+const { Strategy: TwitterStrategy } = require('@passport-js/passport-twitter');
 const { API_ENDPOINTS, DB_FIELDS, DB_TABLES, SOCKET_EVENTS, URLS } = require('./client/src/constants');
 const { TWITTER_PASSPORT_CONFIG, TWITTER_CLIENT_CONFIG } = require('./config');
 
 // Create the server and allow express and sockets to run on the same port
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server);
+const io = socketio(server,{
+  cors: {
+    origin: URLS.CLIENT,
+    methods: ['GET', 'POST']
+  }
+});
 
 // Allows the application to accept JSON and use passport
 app.use(express.json());

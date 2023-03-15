@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Button, Divider, Paper, TextField, Typography, withStyles } from '@material-ui/core';
-import { Done } from '@material-ui/icons';
+import { Button, Divider, Paper, TextField, Typography } from '@mui/material';
+import { withStyles } from '@mui/styles';
+import { Done } from '@mui/icons-material';
 import twitterText from 'twitter-text';
 
 const styles = (theme) => ({
@@ -98,7 +99,7 @@ class TwitterProfile extends Component {
           label={'Twitter Profile Description'}
           name={'twitter_user_description'}
           rows={5}
-          rowsMax={10}
+          // rowsMax={10}
           margin={'normal'}
           value={profile || ''}
           variant={'outlined'}

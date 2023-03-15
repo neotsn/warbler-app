@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Divider, Typography } from '@material-ui/core';
+import { Divider, Typography } from '@mui/material';
 
 /**
  * The settings page to handle Key upload/generation and adjusting the Twitter Profile Description

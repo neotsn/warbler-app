@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Divider, Drawer, List, Toolbar, withStyles } from '@material-ui/core';
+import { Divider, Drawer, List, Toolbar } from '@mui/material';
+import { withStyles } from '@mui/styles';
 import NavigationItem from './NavigationItem';
-import { Settings as SettingsIcon, ViewStream } from '@material-ui/icons';
+import { Settings as SettingsIcon, ViewStream } from '@mui/icons-material';
 
 const drawerWidth = 240;
 

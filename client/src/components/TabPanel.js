@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Box, withStyles } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 const styles = (theme) => ({
   tabPanel: {

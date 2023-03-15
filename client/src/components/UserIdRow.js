@@ -1,16 +1,18 @@
 import React, { Component } from 'react';
-import { IconButton, TextField, withStyles } from '@material-ui/core';
-import { Delete } from '@material-ui/icons';
+import { IconButton, TextField } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { makeStyles, withStyles } from '@mui/styles';
+import { Delete } from '@mui/icons-material';
 
-const styles = (theme) => ({
+const styles = makeStyles(() => ({
   controls: {
     display: 'flex',
     justifyContent: 'space-evenly',
     width: '100%',
     alignItems: 'flex-start',
-    padding: theme.spacing(0, 1, 1)
+    padding: useTheme().spacing(0, 1, 1)
   }
-});
+}));
 
 /**
  * Container for the input fields of a given UserID, with button to remove it

@@ -1,7 +1,9 @@
 import React, { Component, Fragment } from 'react';
-import { createMuiTheme, CssBaseline, ThemeProvider, Toolbar, withStyles } from '@material-ui/core';
-import { Route, Switch } from 'react-router-dom';
-import { deepPurple, lightBlue } from '@material-ui/core/colors';
+import { CssBaseline, ThemeProvider, Toolbar } from '@mui/material';
+import { createTheme, useTheme } from '@mui/material/styles';
+import { makeStyles, withStyles } from '@mui/styles';
+import { Route, Routes } from 'react-router-dom';
+import { deepPurple, lightBlue } from '@mui/material/colors';
 import AppHeader from './components/AppHeader';
 import Navigation from './components/Navigation';
 import Home from './pages/Home';
@@ -14,7 +16,7 @@ import LoginButton from './components/LoginButton';
 import TransitionAlert from './components/TransitionAlert';
 
 // Setup the custom colors
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
       main: deepPurple[700]
@@ -26,18 +28,18 @@ const theme = createMuiTheme({
 });
 
 // Add some styles using the theme settings
-const styles = theme => ({
+const styles = makeStyles(() => ({
   root: {
     display: 'flex'
   },
   content: {
     flexGrow: 1,
-    padding: theme.spacing(3),
-    [theme.breakpoints.down('xs')]: {
-      padding: theme.spacing(2)
+    padding: useTheme().spacing(3),
+    [useTheme().breakpoints.down('xs')]: {
+      padding: useTheme().spacing(2)
     }
   }
-});
+}));
 
 // Generate the App output
 class App extends Component {
@@ -45,7 +47,12 @@ class App extends Component {
     super(props);
 
     this.classes = classes;
-    this.socket = io(URLS.API_SERVER);
+    this.socket = io(URLS.API_SERVER, {
+      // withCredentials: true,
+      // extraHeaders: {
+      //   "my-custom-header": "abcd"
+      // }
+    });
     this.state = {
       disabled: '',
       error: '',
@@ -339,23 +346,17 @@ class App extends Component {
               {error
                ? <TransitionAlert severity={'error'} content={`${error.message} [${error.code}]`}/>
                : null}
-              <Switch>
-                <Route exact path={'/'} component={Home}/>
-                <Route path={'/feed'} render={(props) => (
-                  <Feed
-                    {...props}
-                    user={this.state.user}
-                    onStatusUpdate={this.onStatusUpdate.bind(this)}
-                  />
-                )}/>
-                <Route path={'/settings'} render={(props) => (
-                  <Settings
-                    {...props}
-                    user={this.state.user}
-                    onProfileUpdate={this.onProfileUpdate.bind(this)}
-                  />
-                )}/>
-              </Switch>
+              <Routes>
+                <Route exact path={'/'} element={<Home/>}/>
+                <Route path={'/feed'} element={<Feed
+                  user={this.state.user}
+                  onStatusUpdate={this.onStatusUpdate.bind(this)}
+                />}/>
+                <Route path={'/settings'} element={<Settings
+                  user={this.state.user}
+                  onProfileUpdate={this.onProfileUpdate.bind(this)}
+                />}/>
+              </Routes>
             </main>
           </div>
         </ThemeProvider>

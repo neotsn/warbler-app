@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import TwitterStatus from '../components/TwitterStatus';
-import { Divider } from '@material-ui/core';
+import { Divider } from '@mui/material';
 
 export default class Feed extends Component {
   constructor({ classes, props }) {

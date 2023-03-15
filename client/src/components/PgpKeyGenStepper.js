@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Button, FormControl, FormHelperText, InputLabel, Link, Paper, Select, Step, StepContent, StepLabel, Stepper, withStyles } from '@material-ui/core';
+import { Button, FormControl, FormHelperText, InputLabel, Link, Paper, Select, Step, StepContent, StepLabel, Stepper } from '@mui/material';
+import { withStyles } from '@mui/styles';
 import PrivateKeyPassphrase from './PrivateKeyPassphrase';
 import UserIdsContainer from './UserIdsContainer';
 import LoadingButton from './LoadingButton';

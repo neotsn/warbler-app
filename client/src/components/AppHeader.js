@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { AppBar, Toolbar, Typography, withStyles } from '@material-ui/core';
+import { AppBar, Toolbar, Typography } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 // Setup some styles using the theme settings
 const styles = theme => ({

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Button, Divider, Paper, TextField, withStyles } from '@material-ui/core';
-import { ToggleButton } from '@material-ui/lab';
-import { ViewStream, VpnKey } from '@material-ui/icons';
+import { Button, Divider, Paper, TextField } from '@mui/material';
+import { withStyles } from '@mui/styles';
+import { ToggleButton } from '@mui/material';
+import { ViewStream, VpnKey } from '@mui/icons-material';
 import twitterText from 'twitter-text';
 import StyledToggleButtonGroup from './StyledToggleButtonGroup';
 
@@ -93,7 +94,7 @@ class TwitterStatus extends Component {
             label={'Tweet Content'}
             name={'twitter_tweet'}
             rows={5}
-            rowsMax={10}
+            // rowsMax={10}
             margin={'normal'}
             value={content || ''}
             variant={'outlined'}

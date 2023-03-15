@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Button, withStyles } from '@material-ui/core';
-import { Add } from '@material-ui/icons';
+import { Button } from '@mui/material';
+import { withStyles } from '@mui/styles';
+import { Add } from '@mui/icons-material';
 import UserIdRow from './UserIdRow';
 
 const styles = (theme) => ({

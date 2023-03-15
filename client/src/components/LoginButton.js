@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Avatar, Button, IconButton, ListItemText, Menu, MenuItem } from '@material-ui/core';
-import { Twitter } from '@material-ui/icons';
+import { Avatar, Button, IconButton, ListItemText, Menu, MenuItem } from '@mui/material';
+import { Twitter } from '@mui/icons-material';
 
 class LoginButton extends Component {
   constructor({ props } = {}) {

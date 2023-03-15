@@ -43,6 +43,6 @@ exports.SOCKET_EVENTS = {
  * Application URLs
  */
 exports.URLS = {
-  API_SERVER: 'http://127.0.0.1:3100',
-  CLIENT: 'http://127.0.0.1:3000'
+  API_SERVER: 'http://localhost:3100',
+  CLIENT: 'http://localhost:3000'
 };

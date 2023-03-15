@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { AppBar, Paper, Tab, Tabs, withStyles } from '@material-ui/core';
+import { AppBar, Paper, Tab, Tabs } from '@mui/material';
+import { withStyles } from '@mui/styles';
 import TabPanel from './TabPanel';
 import PgpKeyGenStepper from './PgpKeyGenStepper';
 

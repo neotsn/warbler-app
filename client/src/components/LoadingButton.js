@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Button, CircularProgress, withStyles } from '@material-ui/core';
+import { Button, CircularProgress } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 const styles = (theme) => ({
   spinner: {

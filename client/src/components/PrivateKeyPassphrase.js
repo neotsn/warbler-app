@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, OutlinedInput, withStyles } from '@material-ui/core';
-import { Visibility, VisibilityOff } from '@material-ui/icons';
+import { FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, OutlinedInput } from '@mui/material';
+import { withStyles } from '@mui/styles';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const styles = theme => ({
   formControl: {
