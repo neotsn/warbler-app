@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { CssBaseline, ThemeProvider, Toolbar } from '@mui/material';
 import { createTheme, useTheme } from '@mui/material/styles';
 import { makeStyles, withStyles } from '@mui/styles';
-import { Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { deepPurple, lightBlue } from '@mui/material/colors';
 import AppHeader from './components/AppHeader';
 import Navigation from './components/Navigation';
@@ -138,7 +138,7 @@ class App extends Component {
     /**
      * Kicks off the processes of opening the popup on the server and listening
      * to the popup. It also disables the login button so the user can not
-     * attempt to login to the provider twice.
+     * attempt to log in to the provider twice.
      */
     this.auth.doLogin = () => {
       this.setState({ disabled: 'disabled' });
@@ -323,44 +323,45 @@ class App extends Component {
     const { isAuthenticated, user, error, success } = this.state;
 
     return (
-      <Fragment>
-        <ThemeProvider theme={theme}>
-          <div className={root}>
-            <CssBaseline/>
-            <AppHeader>
-              <LoginButton
-                isAuthenticated={isAuthenticated}
-                user={user}
-                doLogin={this.auth.doLogin.bind(this)}
-                doLogout={this.auth.doLogout.bind(this)}
+      <BrowserRouter>
+        <Fragment>
+          <ThemeProvider theme={theme}>
+            <div className={root}>
+              <CssBaseline/>
+              <AppHeader>
+                <LoginButton
+                  isAuthenticated={isAuthenticated}
+                  user={user}
+                  doLogin={this.auth.doLogin.bind(this)}
+                  doLogout={this.auth.doLogout.bind(this)}
+                />
+              </AppHeader>
+
+              <main className={content}>
+                <Toolbar/>
+                {success ? <TransitionAlert severity={'success'} content={success}/> : null}
+                {error ? <TransitionAlert severity={'error'} content={`${error.message} [${error.code}]`}/> : null}
+                <Routes>
+                  <Route exact path={'/'}>
+                    <Route index element={<Home/>}/>
+                    <Route path="feed" element={<Feed
+                      user={this.state.user}
+                      onStatusUpdate={this.onStatusUpdate.bind(this)}
+                    />}/>
+                    <Route path="settings" element={<Settings
+                      user={this.state.user}
+                      onProfileUpdate={this.onProfileUpdate.bind(this)}
+                    />}/>
+                  </Route>
+                </Routes>
+              </main>
+              <Navigation
+                isAuthenticated={!!isAuthenticated}
               />
-            </AppHeader>
-            <Navigation
-              isAuthenticated={isAuthenticated}
-            />
-            <main className={content}>
-              <Toolbar/>
-              {success
-               ? <TransitionAlert severity={'success'} content={success}/>
-               : null}
-              {error
-               ? <TransitionAlert severity={'error'} content={`${error.message} [${error.code}]`}/>
-               : null}
-              <Routes>
-                <Route exact path={'/'} element={<Home/>}/>
-                <Route path={'/feed'} element={<Feed
-                  user={this.state.user}
-                  onStatusUpdate={this.onStatusUpdate.bind(this)}
-                />}/>
-                <Route path={'/settings'} element={<Settings
-                  user={this.state.user}
-                  onProfileUpdate={this.onProfileUpdate.bind(this)}
-                />}/>
-              </Routes>
-            </main>
-          </div>
-        </ThemeProvider>
-      </Fragment>
+            </div>
+          </ThemeProvider>
+        </Fragment>
+      </BrowserRouter>
     );
   }
 };

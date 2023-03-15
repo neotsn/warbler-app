@@ -1,67 +1,34 @@
-import React, { Component } from 'react';
-import { Divider, Drawer, List, Toolbar } from '@mui/material';
-import { withStyles } from '@mui/styles';
-import NavigationItem from './NavigationItem';
-import { Settings as SettingsIcon, ViewStream } from '@mui/icons-material';
-
-const drawerWidth = 240;
-
-const styles = theme => ({
-  drawer: {
-    width: drawerWidth,
-    flexShrink: 0
-  },
-  drawerPaper: {
-    width: drawerWidth
-  },
-  drawerContainer: {
-    overflow: 'auto'
-  }
-});
+import React from 'react';
+import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
+import { Home, Settings, ViewStream } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 
 /**
  * Generate the Navigation Drawer for authenticated users
- * @param classes
- * @param props
- * @returns {JSX.Element|null}
- * @constructor
  */
-class Navigation extends Component {
-  constructor({ classes, props } = {}) {
-    super(props);
+const Navigation = (props) => {
+  const [value, setValue] = React.useState('/');
+  const { isAuthenticated } = props;
 
-    this.classes = classes;
+  if (!isAuthenticated) {
+    return null;
   }
 
-  render() {
-    const { drawer, drawerPaper, drawerContainer } = this.classes;
-    const { isAuthenticated } = this.props;
-
-    if (!isAuthenticated) {
-      // Not Authenticated, no Navigation to display
-      return null;
-    }
-
-    return (
-      <Drawer
-        className={drawer}
-        variant={'permanent'}
-        classes={{ paper: drawerPaper }}
-      >
-        <Toolbar/>
-        <div className={drawerContainer}>
-          <List>
-            <NavigationItem url={'/feed'} label={'Feed'} icon={<ViewStream/>}/>
-            <NavigationItem url={'/settings'} label={'Settings'} icon={<SettingsIcon/>}/>
-          </List>
-          <Divider/>
-          <List>
-            <NavigationItem url={'/logout'} label={'Logout'} icon={''}/>
-          </List>
-        </div>
-      </Drawer>
-    );
-  }
+  return (
+    <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
+      <nav>
+        <BottomNavigation
+          showLabels
+          value={value}
+          onChange={(event, newValue) => setValue(newValue)}
+        >
+          <BottomNavigationAction component={Link} to="/" showLabel={true} label="Home" icon={<Home/>}/>
+          <BottomNavigationAction component={Link} to="/feed" label="Feed" icon={<ViewStream/>}/>
+          <BottomNavigationAction component={Link} to="/settings" label="Settings" icon={<Settings/>}/>
+        </BottomNavigation>
+      </nav>
+    </Paper>
+  );
 };
 
-export default withStyles(styles)(Navigation);
+export default Navigation;
