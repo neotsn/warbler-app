@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
 import { AppBar, Paper, Tab, Tabs } from '@mui/material';
-import { withStyles } from '@mui/styles';
+import { makeStyles, withStyles } from '@mui/styles';
 import TabPanel from './TabPanel';
 import PgpKeyGenStepper from './PgpKeyGenStepper';
+import { useTheme } from '@mui/material/styles';
 
-const styles = (theme) => ({
+const styles = makeStyles(() => ({
   paper: {
     display: 'flex',
     margin: '0 auto',
     width: '50vw',
-    border: `1px solid ${theme.palette.divider}`,
+    border: `1px solid ${useTheme().palette.divider}`,
     flexWrap: 'wrap',
-    padding: theme.spacing(1)
+    padding: useTheme().spacing(1)
   },
   formRow: {
     display: 'flex',
@@ -19,7 +20,7 @@ const styles = (theme) => ({
     alignItems: 'center',
     justifyContent: 'center'
   }
-});
+}));
 
 class PgpSettings extends Component {
   constructor({ classes, props }) {
