@@ -11,7 +11,7 @@ import Feed from './pages/Feed';
 import Settings from './pages/Settings';
 import { API_ENDPOINTS, DB_FIELDS, DB_TABLES, SOCKET_EVENTS, URLS } from './constants';
 import io from 'socket.io-client';
-import { Request } from './helpers/request';
+import Request from './helpers/Request';
 import LoginButton from './components/LoginButton';
 import TransitionAlert from './components/TransitionAlert';
 
@@ -62,9 +62,11 @@ class App extends Component {
       user: {}
     };
 
+    /** @note These need to be in this order, they use from previous init methods */
     this.initDb();
     this.initAuth();
     this.initPopup();
+    this.initTwitter();
   }
 
   /**
@@ -76,8 +78,8 @@ class App extends Component {
     this.socket
       .on(SOCKET_EVENTS.SUCCESS, (success) => this.setState({ success }))
       .on(SOCKET_EVENTS.ERROR, (error) => this.setState({ error }))
-      .on(SOCKET_EVENTS.TWITTER_AUTH, (response) => this.onTwitterAuth({ response }))
-      .on(SOCKET_EVENTS.TWITTER_USER_GET, (user) => this.onTwitterUser({ user }))
+      .on(SOCKET_EVENTS.TWITTER_AUTH, (response) => this.twitter.onAuth({ response }))
+      .on(SOCKET_EVENTS.TWITTER_USER_GET, (user) => this.twitter.onUser({ user }))
       // Update the user record in state with the changes sent to the server
       .on(SOCKET_EVENTS.TWITTER_USER_UPDATE, (user) => this.setState({ user }));
   }
@@ -239,65 +241,60 @@ class App extends Component {
     };
   }
 
-  /**
-   * Handle sending the new profile data to the API Server
-   */
-  onProfileUpdate = ({ data } = {}) => {
-    const { description } = data;
+  initTwitter() {
+    this.twitter = {
+      /** Handle the Twitter Authentication event */
+      onAuth: ({ response } = {}) => {
+        const { tokens, userData } = response;
+        const { user_id, screen_name } = userData;
 
-    fetch(Request.makeUrl({
-      host: URLS.API_SERVER,
-      uri: API_ENDPOINTS.TWITTER_USER_UPDATE,
-      requestParams: Object.assign({}, this.auth.buildTwitterClientCredentials(), { description })
-    }), {
-      method: 'POST'
-    })
-      .catch(console.error);
-  };
+        // Close the popup
+        this.popup.window.close();
 
-  /**
-   * Handle sending the Tweet/Status Update
-   */
-  onStatusUpdate = ({ data } = {}) => {
-    const { status, options } = data;
+        // DB-stored credentials
+        this.db.set({
+          property: DB_TABLES.TWITTER_TOKENS,
+          // Inject the username to auto-login the user on revisit
+          value: Object.assign({}, tokens, { user_id, screen_name })
+        });
 
-    fetch(Request.makeUrl({
-      host: URLS.API_SERVER,
-      uri: API_ENDPOINTS.TWITTER_STATUS_UPDATE,
-      requestParams: Object.assign({}, this.auth.buildTwitterClientCredentials(), { status, options })
-    }), {
-      method: 'POST'
-    })
-      .catch(console.error);
-  };
+        // Immediately go fetch the User Object...
+        this.auth.getUser();
+      },
+      /** Handle sending the new profile data to the API Server */
+      onProfileUpdate: ({ data } = {}) => {
+        const { description } = data;
 
-  /**
-   * Handle the Twitter Authentication event
-   */
-  onTwitterAuth = ({ response } = {}) => {
-    const { tokens, userData } = response;
-    const { user_id, screen_name } = userData;
+        fetch(Request.makeUrl({
+          host: URLS.API_SERVER,
+          uri: API_ENDPOINTS.TWITTER_USER_UPDATE,
+          requestParams: Object.assign({}, this.auth.buildTwitterClientCredentials(), { description })
+        }), {
+          method: 'POST'
+        })
+          .catch(console.error);
+      },
+      /** Handle sending the Tweet/Status Update */
+      onStatusUpdate: ({ data } = {}) => {
+        const { status, options } = data;
 
-    // Close the popup
-    this.popup.window.close();
-
-    // DB-stored credentials
-    this.db.set({
-      property: DB_TABLES.TWITTER_TOKENS,
-      // Inject the username to auto-login the user on revisit
-      value: Object.assign({}, tokens, { user_id, screen_name })
-    });
-
-    // Immediately go fetch the User Object...
-    this.auth.getUser();
-  };
-
-  /** Handle the Twitter User Object storage and mark as authenticated */
-  onTwitterUser({ user } = {}) {
-    if (user) {
-      // This is a UserObject from twitter
-      this.setState({ user, isAuthenticated: true });
-    }
+        fetch(Request.makeUrl({
+          host: URLS.API_SERVER,
+          uri: API_ENDPOINTS.TWITTER_STATUS_UPDATE,
+          requestParams: Object.assign({}, this.auth.buildTwitterClientCredentials(), { status, options })
+        }), {
+          method: 'POST'
+        })
+          .catch(console.error);
+      },
+      /** Handle the Twitter User Object storage and mark as authenticated */
+      onUser: ({ user } = {}) => {
+        if (user) {
+          // This is a UserObject from twitter
+          this.setState({ user, isAuthenticated: true });
+        }
+      }
+    };
   }
 
   render() {
@@ -326,14 +323,18 @@ class App extends Component {
                 <Routes>
                   <Route exact path={'/'}>
                     <Route index element={<Home/>}/>
-                    <Route path="feed" element={<Feed
-                      user={this.state.user}
-                      onStatusUpdate={this.onStatusUpdate.bind(this)}
-                    />}/>
-                    <Route path="settings" element={<Settings
-                      user={this.state.user}
-                      onProfileUpdate={this.onProfileUpdate.bind(this)}
-                    />}/>
+                    <Route path="feed" element={
+                      <Feed
+                        user={this.state.user}
+                        onStatusUpdate={this.twitter.onStatusUpdate.bind(this)}
+                      />
+                    }/>
+                    <Route path="settings" element={
+                      <Settings
+                        user={this.state.user}
+                        onProfileUpdate={this.twitter.onProfileUpdate.bind(this)}
+                      />
+                    }/>
                   </Route>
                 </Routes>
               </main>
