@@ -1,36 +1,35 @@
 import React, { Component } from 'react';
 import { Button, FormControl, FormHelperText, InputLabel, Link, Paper, Select, Step, StepContent, StepLabel, Stepper } from '@mui/material';
-import { makeStyles, withStyles } from '@mui/styles';
+import { withStyles } from '@mui/styles';
 import PrivateKeyPassphrase from './PrivateKeyPassphrase';
 import UserIdsContainer from './UserIdsContainer';
 import LoadingButton from './LoadingButton';
-import { useTheme } from '@mui/material/styles';
 
-const styles = makeStyles(() => ({
+const styles = theme => ({
   root: {
     width: '100%'
   },
   button: {
-    marginTop: useTheme().spacing(1),
-    marginRight: useTheme().spacing(1)
+    marginTop: theme.spacing(1),
+    marginRight: theme.spacing(1)
   },
   actionsContainer: {
     display: 'flex',
     alignContent: 'center',
     justifyContent: 'flex-end',
-    marginTop: useTheme().spacing(1),
-    marginBottom: useTheme().spacing(1)
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1)
   },
   resetContainer: {
-    padding: useTheme().spacing(3)
+    padding: theme.spacing(3)
   },
   formControl: {
     display: 'flex',
-    margin: useTheme().spacing(1),
+    margin: theme.spacing(1),
     minWidth: 120,
     width: '100%'
   }
-}));
+});
 
 class PgpKeyGenStepper extends Component {
   constructor({ classes, props }) {
