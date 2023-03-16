@@ -11,7 +11,7 @@ export default class Feed extends Component {
 
   render() {
     return (
-      <>
+      <div>
         <TwitterStatus
           onStatusUpdate={this.props.onStatusUpdate}
         />
@@ -19,7 +19,7 @@ export default class Feed extends Component {
         <Divider/>
         <br/>
         {/* TODO Add the Twitter Feed Here */}
-      </>
+      </div>
     );
   }
 }
