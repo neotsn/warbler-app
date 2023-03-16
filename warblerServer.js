@@ -12,11 +12,12 @@ require('dotenv').config();
 const { Strategy: TwitterStrategy } = require('@passport-js/passport-twitter');
 const { API_ENDPOINTS, DB_FIELDS, DB_TABLES, SOCKET_EVENTS, URLS } = require('./client/src/constants');
 const { TWITTER_PASSPORT_CONFIG, TWITTER_CLIENT_CONFIG } = require('./config');
+const Tweets = require('./helpers/Tweets');
 
 // Create the server and allow express and sockets to run on the same port
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server,{
+const io = socketio(server, {
   cors: {
     origin: URLS.CLIENT,
     methods: ['GET', 'POST']
@@ -228,35 +229,20 @@ app.post(API_ENDPOINTS.TWITTER_STATUS_UPDATE, addSocketId, (req, res) => {
       const { status, options } = req.query;
       const client = initClient(req);
 
-      if (options.indexOf('thread') > -1) {
+      const doThread = (options && options.indexOf('thread') > -1);
+      const doSign = (options && options.indexOf('sign') > -1);
 
-        const { id_str } = tweetObject;
-        // const tweetObject = await client
-        //   .post('statuses/update', {
-        //     status,
-        //     auto_populate_reply_metadata: true,
-        //     trim_user: true,
-        //   });
-
-      } else if (options.indexOf('sign') > -1) {
-        // const tweetObject = await client
-        //   .post('statuses/update', {
-        //     status,
-        //     auto_populate_reply_metadata: true,
-        //     trim_user: true,
-        //   });
-      } else {
-        // const tweetObject = await client
-        //   .post('statuses/update', {
-        //     status,
-        //     auto_populate_reply_metadata: true,
-        //     trim_user: true,
-        //   });
-      }
-
-      const { id_str } = tweetObject;
-
-      console.log(tweetObject);
+      Tweets.postStatus({
+        client,
+        status,
+        doThread,
+        doSign,
+        onError: (reason) => { onError(socket, reason); }
+      })
+        .then((tweetObject) => {
+          const { id_str } = tweetObject;
+          console.log(tweetObject);
+        });
 
     } catch (e) {
       onError(socket, e);
