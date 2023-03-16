@@ -1,17 +1,16 @@
 import React, { Component } from 'react';
 import { Alert, Collapse, IconButton } from '@mui/material';
-import { makeStyles, withStyles } from '@mui/styles';
+import { withStyles } from '@mui/styles';
 import { Close } from '@mui/icons-material';
-import { useTheme } from '@mui/material/styles';
 
-const styles = makeStyles(() => ({
+const styles = theme => ({
   root: {
     width: '100%',
     '& > * + *': {
-      marginTop: useTheme().spacing(2)
+      marginTop: theme.spacing(2)
     }
   }
-}));
+});
 
 class TransitionAlert extends Component {
   constructor({ classes, props }) {
