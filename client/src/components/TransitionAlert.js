@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { Alert } from '@mui/lab';
-import { Collapse, IconButton } from '@mui/material';
+import { Alert, Collapse, IconButton } from '@mui/material';
 import { withStyles } from '@mui/styles';
 import { Close } from '@mui/icons-material';
 
