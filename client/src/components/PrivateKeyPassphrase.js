@@ -1,17 +1,16 @@
 import React, { Component } from 'react';
 import { FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, OutlinedInput } from '@mui/material';
-import { makeStyles, withStyles } from '@mui/styles';
+import { withStyles } from '@mui/styles';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useTheme } from '@mui/material/styles';
 
-const styles = makeStyles(() => ({
+const styles = theme => ({
   formControl: {
     display: 'flex',
-    margin: useTheme().spacing(1),
+    margin: theme.spacing(1),
     minWidth: 120,
     width: '100%'
   }
-}));
+});
 
 class PrivateKeyPassphrase extends Component {
   constructor({ classes, props }) {
