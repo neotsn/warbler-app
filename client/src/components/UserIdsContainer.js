@@ -1,19 +1,18 @@
 import React, { Component } from 'react';
 import { Button } from '@mui/material';
-import { makeStyles, withStyles } from '@mui/styles';
+import { withStyles } from '@mui/styles';
 import { Add } from '@mui/icons-material';
 import UserIdRow from './UserIdRow';
-import { useTheme } from '@mui/material/styles';
 
-const styles = makeStyles(() => ({
+const styles = (theme) => ({
   controls: {
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
     alignItems: 'center',
-    padding: useTheme().spacing(0, 1, 1)
+    padding: theme.spacing(0, 1, 1)
   }
-}));
+});
 
 class UserIdsContainer extends Component {
   static defaultUser = { name: '', email: '' };
