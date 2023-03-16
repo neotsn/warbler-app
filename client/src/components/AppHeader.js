@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
 import { AppBar, Toolbar, Typography } from '@mui/material';
-import { withStyles } from '@mui/styles';
+import { makeStyles, withStyles } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 
 // Setup some styles using the theme settings
-const styles = theme => ({
+const styles = makeStyles(() => ({
   appBar: {
-    zIndex: theme.zIndex.drawer + 1
+    zIndex: useTheme().zIndex.drawer + 1
   },
   headerButtons: {
     textAlign: 'right',
     flex: 1
   }
-});
+}));
 
 // Generate the AppHeader output
 class AppHeader extends Component {
