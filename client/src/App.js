@@ -18,6 +18,7 @@ import TransitionAlert from './components/TransitionAlert';
 // Setup the custom colors
 const theme = createTheme({
   palette: {
+    // mode: 'dark',
     primary: {
       main: deepPurple[700]
     },
@@ -73,49 +74,83 @@ class App extends Component {
     this.auth.checkAuthentication();
 
     this.socket
-      .on(SOCKET_EVENTS.SUCCESS, success => {
-        this.setState({ success });
-      })
-      .on(SOCKET_EVENTS.ERROR, error => {
-        this.setState({ error });
-      })
-      .on(SOCKET_EVENTS.TWITTER_AUTH, response => {
-        const { tokens, userData } = response;
-        this.onTwitterAuth({ tokens, userData });
-      })
-      .on(SOCKET_EVENTS.TWITTER_USER_GET, user => {
-        if (user) {
-          // This is a UserObject from twitter
-          this.setState({ user, isAuthenticated: true });
-        }
-      })
-      .on(SOCKET_EVENTS.TWITTER_USER_UPDATE, user => {
-        // Update the user record in state with the changes sent to the server
-        this.setState({ user });
-      });
+      .on(SOCKET_EVENTS.SUCCESS, (success) => this.setState({ success }))
+      .on(SOCKET_EVENTS.ERROR, (error) => this.setState({ error }))
+      .on(SOCKET_EVENTS.TWITTER_AUTH, (response) => this.onTwitterAuth({ response }))
+      .on(SOCKET_EVENTS.TWITTER_USER_GET, (user) => this.onTwitterUser({ user }))
+      // Update the user record in state with the changes sent to the server
+      .on(SOCKET_EVENTS.TWITTER_USER_UPDATE, (user) => this.setState({ user }));
   }
 
   componentDidUpdate() {
     this.auth.checkAuthentication();
   }
 
-  /**
-   * Setup some authentication methods and helpers
-   */
+  /** Setup some authentication methods and helpers */
   initAuth() {
-    this.auth = {};
+    this.auth = {
+      /** Compile the common credentials passed to the Twitter Client API endpoints */
+      buildTwitterClientCredentials: () => {
+        const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
 
-    /**
-     * Compile the common credentials passed to the Twitter Client API endpoints
-     */
-    this.auth.buildTwitterClientCredentials = () => {
-      const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
+        return Object.assign({}, {
+          socketId: this.socket.id,
+          access_token_key: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_KEY] || null,
+          access_token_secret: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_SECRET] || null
+        });
+      },
 
-      return Object.assign({}, {
-        socketId: this.socket.id,
-        access_token_key: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_KEY] || null,
-        access_token_secret: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_SECRET] || null
-      });
+      /**
+       * Kicks off the processes of opening the popup on the server and listening
+       * to the popup. It also disables the login button so the user can not
+       * attempt to log in to the provider twice.
+       */
+      doLogin: () => {
+        this.setState({ disabled: 'disabled' });
+
+        this.popup.doOpen({
+          url: Request.makeUrl({
+            host: URLS.API_SERVER,
+            uri: API_ENDPOINTS.TWITTER_AUTH,
+            requestParams: {
+              socketId: this.socket.id
+            }
+          })
+        });
+        this.popup.doCheck();
+      },
+
+      /** Clears out the user's info when the card is closed */
+      doLogout: () => {
+        this.db.set({ property: DB_TABLES.TWITTER_TOKENS });
+        this.setState({ user: {} });
+      },
+
+      /** Request the User Object from the Twitter Client API */
+      getUser: () => {
+        // Pull the Tokens
+        const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
+
+        // Check that we've authenticated before
+        if (tokens && tokens.hasOwnProperty('user_id')) {
+          const { user_id } = tokens;
+
+          if (user_id && user_id.length) {
+            fetch(Request.makeUrl({
+              host: URLS.API_SERVER,
+              uri: API_ENDPOINTS.TWITTER_USER_GET,
+              requestParams: Object.assign(this.auth.buildTwitterClientCredentials(), { user_id })
+            }))
+              .catch(console.error);
+          }
+        }
+      },
+
+      /** Return true if there is a known secret in the token store */
+      isAuthenticated: () => {
+        const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
+        return (tokens && tokens.hasOwnProperty(DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_SECRET));
+      }
     };
 
     /**
@@ -134,69 +169,9 @@ class App extends Component {
         }
       }, 100);
     };
-
-    /**
-     * Kicks off the processes of opening the popup on the server and listening
-     * to the popup. It also disables the login button so the user can not
-     * attempt to log in to the provider twice.
-     */
-    this.auth.doLogin = () => {
-      this.setState({ disabled: 'disabled' });
-
-      this.popup.doOpen({
-        url: Request.makeUrl({
-          host: URLS.API_SERVER,
-          uri: API_ENDPOINTS.TWITTER_AUTH,
-          requestParams: {
-            socketId: this.socket.id
-          }
-        })
-      });
-      this.popup.doCheck();
-    };
-
-    /**
-     * Clears out the user's info when the card is closed
-     */
-    this.auth.doLogout = () => {
-      this.db.set({ property: DB_TABLES.TWITTER_TOKENS });
-      this.setState({ user: {} });
-    };
-
-    /**
-     * Return true if there is a known secret in the token store
-     */
-    this.auth.isAuthenticated = () => {
-      const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
-      return (tokens && tokens.hasOwnProperty(DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_SECRET));
-    };
-
-    /**
-     * Request the User Object from the Twitter Client API
-     */
-    this.auth.getUser = () => {
-      // Pull the Tokens
-      const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
-
-      // Check that we've authenticated before
-      if (tokens && tokens.hasOwnProperty('user_id')) {
-        const { user_id } = tokens;
-
-        if (user_id && user_id.length) {
-          fetch(Request.makeUrl({
-            host: URLS.API_SERVER,
-            uri: API_ENDPOINTS.TWITTER_USER_GET,
-            requestParams: Object.assign(this.auth.buildTwitterClientCredentials(), { user_id })
-          }))
-            .catch(console.error);
-        }
-      }
-    };
   }
 
-  /**
-   * Configure a db property with LocalStorage getter/setter overrides
-   */
+  /** Configure a db property with LocalStorage getter/setter overrides */
   initDb() {
     this.db = {
       /**
@@ -228,9 +203,7 @@ class App extends Component {
     };
   }
 
-  /**
-   * Setup some methods and property to manage popup windows
-   */
+  /** Setup some methods and property to manage popup windows */
   initPopup() {
     this.popup = { window: null };
 
@@ -248,7 +221,7 @@ class App extends Component {
     };
 
     /**
-     * Launches the popup on the server and passes along the socket id
+     * Launches the popup on the server and passes along the socket id,
      * so it can be used to send back user data to the appropriate socket
      * on the connected client
      * @returns {Window}
@@ -301,7 +274,8 @@ class App extends Component {
   /**
    * Handle the Twitter Authentication event
    */
-  onTwitterAuth = ({ tokens, userData } = {}) => {
+  onTwitterAuth = ({ response } = {}) => {
+    const { tokens, userData } = response;
     const { user_id, screen_name } = userData;
 
     // Close the popup
@@ -317,6 +291,14 @@ class App extends Component {
     // Immediately go fetch the User Object...
     this.auth.getUser();
   };
+
+  /** Handle the Twitter User Object storage and mark as authenticated */
+  onTwitterUser({ user } = {}) {
+    if (user) {
+      // This is a UserObject from twitter
+      this.setState({ user, isAuthenticated: true });
+    }
+  }
 
   render() {
     const { root, content } = this.classes;
