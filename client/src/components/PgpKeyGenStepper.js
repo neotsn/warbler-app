@@ -45,18 +45,18 @@ class PgpKeyGenStepper extends Component {
     };
   }
 
-  doGenerate = (e) => {
+  doGenerate(e) {
     const { curve, passphrase, userIds } = this.state;
     this.setState({ isGenerating: true });
 
     // this.props.pgp.doKeyGen({ curve, passphrase, userIds });
   };
 
-  doReset = () => {
+  doReset() {
     this.setState({ activeStep: 0 });
   };
 
-  getSteps = () => {
+  getSteps() {
     const { curves } = this.props;
     return [
       {
@@ -92,23 +92,23 @@ class PgpKeyGenStepper extends Component {
     ];
   };
 
-  onBack = () => {
+  onBack() {
     this.setState({ activeStep: this.state.activeStep - 1 });
   };
 
-  onChangeCurve = (e) => {
+  onChangeCurve(e) {
     this.setState({ curve: e.currentTarget.value });
   };
 
-  onChangePassphrase = ({ passphrase }) => {
+  onChangePassphrase({ passphrase }) {
     this.setState({ passphrase });
   };
 
-  onChangeUserIds = ({ userIds }) => {
+  onChangeUserIds({ userIds }) {
     this.setState({ userIds });
   };
 
-  onNext = () => {
+  onNext() {
     this.setState({ activeStep: this.state.activeStep + 1 });
   };
 
@@ -126,7 +126,7 @@ class PgpKeyGenStepper extends Component {
                 <div className={this.classes.actionsContainer}>
                   <Button
                     disabled={this.state.activeStep === 0}
-                    onClick={this.onBack}
+                    onClick={this.onBack.bind(this)}
                     className={this.classes.button}
                   >
                     Back
@@ -134,7 +134,7 @@ class PgpKeyGenStepper extends Component {
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={this.onNext}
+                    onClick={this.onNext.bind(this)}
                     className={this.classes.button}
                   >
                     {this.state.activeStep === steps.length - 1 ? 'Finish' : 'Next'}
@@ -146,7 +146,7 @@ class PgpKeyGenStepper extends Component {
         </Stepper>
         {this.state.activeStep === steps.length && (
           <Paper square elevation={0} className={this.classes.resetContainer}>
-            <Button onClick={this.doReset} className={this.classes.button}>
+            <Button onClick={this.doReset.bind(this)} className={this.classes.button}>
               Start Over
             </Button>
             <LoadingButton

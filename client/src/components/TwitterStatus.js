@@ -1,29 +1,20 @@
 import React, { Component } from 'react';
-import { Button, Divider, Paper, TextField } from '@mui/material';
+import { Button, Container, Divider, TextField, ToggleButton } from '@mui/material';
 import { withStyles } from '@mui/styles';
-import { ToggleButton } from '@mui/material';
 import { ViewStream, VpnKey } from '@mui/icons-material';
 import twitterText from 'twitter-text';
 import StyledToggleButtonGroup from './StyledToggleButtonGroup';
 
 const styles = (theme) => ({
-  paper: {
-    display: 'flex',
-    margin: '0 auto',
-    width: '50vw',
-    border: `1px solid ${theme.palette.divider}`,
-    flexWrap: 'wrap'
-  },
-  input: {
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1)
+  container: {
+    padding: theme.spacing(2),
   },
   controls: {
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
     alignItems: 'center',
-    padding: theme.spacing(0, 1, 1)
+    padding: theme.spacing(2)
   }
 });
 
@@ -85,48 +76,42 @@ class TwitterStatus extends Component {
     const { content, characterCount, maxCharacters } = this.state;
 
     return (
-      <div>
-        <Paper
-          elevation={1}
-          className={this.classes.paper}
-        >
-          <TextField
-            label={'Tweet Content'}
-            name={'twitter_tweet'}
-            rows={5}
-            // rowsMax={10}
-            margin={'normal'}
-            value={content || ''}
-            variant={'outlined'}
-            multiline
-            fullWidth={true}
-            helperText={`${characterCount}/${maxCharacters}`}
-            onChange={this.onInputChange}
-            className={this.classes.input}
-          />
-          <Divider/>
-          <div className={this.classes.controls}>
-            <StyledToggleButtonGroup
-              size={'small'}
-              value={this.state.options}
-              onChange={this.onOptionChange}
-              aria-label="tweet options"
-            >
-              <ToggleButton value="sign" aria-label="sign">
-                <VpnKey/>
-              </ToggleButton>
-              <ToggleButton value="thread" aria-label="thread">
-                <ViewStream/>
-              </ToggleButton>
-            </StyledToggleButtonGroup>
-            <Button
-              variant={'contained'}
-              color={'secondary'}
-              onClick={this.onSubmit}
-            >{'Tweet'}</Button>
-          </div>
-        </Paper>
-      </div>
+      <Container className={this.classes.container}>
+        <TextField
+          label={'Tweet Content'}
+          name={'twitter_tweet'}
+          rows={5}
+          // rowsMax={10}
+          margin={'normal'}
+          value={content || ''}
+          variant={'outlined'}
+          multiline
+          fullWidth={true}
+          helperText={`${characterCount}/${maxCharacters}`}
+          onChange={this.onInputChange}
+        />
+        <Divider/>
+        <div className={this.classes.controls}>
+          <StyledToggleButtonGroup
+            size={'small'}
+            value={this.state.options}
+            onChange={this.onOptionChange}
+            aria-label="tweet options"
+          >
+            <ToggleButton value="sign" aria-label="sign">
+              <VpnKey/>
+            </ToggleButton>
+            <ToggleButton value="thread" aria-label="thread">
+              <ViewStream/>
+            </ToggleButton>
+          </StyledToggleButtonGroup>
+          <Button
+            variant={'contained'}
+            color={'secondary'}
+            onClick={this.onSubmit}
+          >{'Tweet'}</Button>
+        </div>
+      </Container>
     );
   }
 }

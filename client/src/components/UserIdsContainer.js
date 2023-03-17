@@ -30,7 +30,7 @@ class UserIdsContainer extends Component {
     this.onAddUserId();
   }
 
-  onAddUserId = () => {
+  onAddUserId() {
     let { userIds } = this.state;
 
     userIds.push(Object.assign({}, UserIdsContainer.defaultUser));
@@ -39,7 +39,7 @@ class UserIdsContainer extends Component {
     this.props.onChangeUserIds({ userIds });
   };
 
-  onChangeUserId = ({ index, name, email }) => {
+  onChangeUserId({ index, name, email }) {
     let { userIds } = this.state;
 
     userIds[index].name = name;
@@ -49,7 +49,7 @@ class UserIdsContainer extends Component {
     this.props.onChangeUserIds({ userIds });
   };
 
-  onDeleteUserId = ({ index }) => {
+  onDeleteUserId({ index }) {
     const { userIds } = this.state;
 
     // Drop this index...
@@ -68,7 +68,7 @@ class UserIdsContainer extends Component {
     return (
       <div>
         <div id={'userid-rows'}>
-          {this.state.userIds.map((userData, index) => {
+          {Object.values(this.state.userIds || []).map((userData, index) => {
             return <UserIdRow
               key={index}
               index={index}
@@ -76,7 +76,7 @@ class UserIdsContainer extends Component {
               email={userData.email}
               onChangeUserId={this.onChangeUserId.bind(this)}
               onDeleteUserId={this.onDeleteUserId.bind(this)}
-              showDelete={this.state.userIds.length > 1}
+              showDelete={Object.values(this.state.userIds || []).length > 1}
             />;
           })}
         </div>
@@ -85,7 +85,7 @@ class UserIdsContainer extends Component {
             variant={'contained'}
             color={'secondary'}
             startIcon={<Add/>}
-            onClick={this.onAddUserId}
+            onClick={this.onAddUserId.bind(this)}
           >Add User ID</Button>
         </div>
       </div>

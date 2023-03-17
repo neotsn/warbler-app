@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { AppBar, Paper, Tab, Tabs } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Tab, Tabs, Typography } from '@mui/material';
 import { withStyles } from '@mui/styles';
 import TabPanel from './TabPanel';
 import PgpKeyGenStepper from './PgpKeyGenStepper';
+import { ExpandMore } from '@mui/icons-material';
 
 const styles = (theme) => ({
   paper: {
@@ -37,11 +38,15 @@ class PgpSettings extends Component {
 
   render() {
     return (
-      <Paper
-        elevation={1}
-        className={this.classes.paper}
-      >
-        <AppBar position={'static'} color={'default'}>
+      <Accordion variant="outlined">
+        <AccordionSummary
+          expandIcon={<ExpandMore/>}
+          aria-controls="pgp-config-content"
+          id="pgp-config-header"
+        >
+          <Typography>PGP Configuration</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
           <Tabs
             value={this.state.tab}
             onChange={this.onChangeTab}
@@ -53,16 +58,16 @@ class PgpSettings extends Component {
             <Tab label={'Generate Keys'}/>
             <Tab label={'Upload Keys'}/>
           </Tabs>
-        </AppBar>
-        <TabPanel value={this.state.tab} index={0} dir={'ltr'}>
-          <PgpKeyGenStepper
-            curves={this.props.curves}
-          />
-        </TabPanel>
-        <TabPanel value={this.state.tab} index={1} dir={'ltr'}>
-          Add Upload Functionality
-        </TabPanel>
-      </Paper>
+          <TabPanel value={this.state.tab} index={0} dir={'ltr'}>
+            <PgpKeyGenStepper
+              curves={['curve25519']}
+            />
+          </TabPanel>
+          <TabPanel value={this.state.tab} index={1} dir={'ltr'}>
+            Add Upload Functionality
+          </TabPanel>
+        </AccordionDetails>
+      </Accordion>
     );
   }
 }

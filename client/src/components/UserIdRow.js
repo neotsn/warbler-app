@@ -1,18 +1,17 @@
 import React, { Component } from 'react';
 import { IconButton, TextField } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { makeStyles, withStyles } from '@mui/styles';
+import { withStyles } from '@mui/styles';
 import { Delete } from '@mui/icons-material';
 
-const styles = makeStyles(() => ({
+const styles = (theme) => ({
   controls: {
     display: 'flex',
     justifyContent: 'space-evenly',
     width: '100%',
     alignItems: 'flex-start',
-    padding: useTheme().spacing(0, 1, 1)
+    padding: theme.spacing(0, 1, 1)
   }
-}));
+});
 
 /**
  * Container for the input fields of a given UserID, with button to remove it
@@ -23,7 +22,7 @@ class UserIdRow extends Component {
     this.classes = classes;
   }
 
-  onChangeEmail = (e) => {
+  onChangeEmail(e) {
     const { index, name } = this.props;
     this.props.onChangeUserId({
       index,
@@ -32,7 +31,7 @@ class UserIdRow extends Component {
     });
   };
 
-  onChangeName = (e) => {
+  onChangeName(e) {
     const { index, email } = this.props;
     this.props.onChangeUserId({
       index,
@@ -41,7 +40,7 @@ class UserIdRow extends Component {
     });
   };
 
-  onDelete = (e) => {
+  onDelete(e) {
     e.preventDefault();
     const { index } = this.props;
     this.props.onDeleteUserId({ index });
@@ -56,7 +55,7 @@ class UserIdRow extends Component {
           variant="outlined"
           value={this.props.name}
           helperText={'The name of a person associated to the Public Key'}
-          onChange={this.onChangeName}
+          onChange={this.onChangeName.bind(this)}
         />
         <TextField
           id={`email-${this.props.index}`}
@@ -64,10 +63,10 @@ class UserIdRow extends Component {
           variant="outlined"
           value={this.props.email}
           helperText={'Email address associated to the Public Key'}
-          onChange={this.onChangeEmail}
+          onChange={this.onChangeEmail.bind(this)}
         />
         {this.props.showDelete
-         ? <IconButton color={'default'} aria-label={'delete'} onClick={this.onDelete}><Delete/></IconButton>
+         ? <IconButton color={'default'} aria-label={'delete'} onClick={this.onDelete.bind(this)}><Delete/></IconButton>
          : null}
       </div>
     );

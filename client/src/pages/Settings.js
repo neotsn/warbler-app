@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Divider, Typography } from '@mui/material';
+import { Card, CardContent, Typography } from '@mui/material';
+import PgpSettings from '../components/PgpSettings';
 
 /**
  * The settings page to handle Key upload/generation and adjusting the Twitter Profile Description
@@ -13,12 +14,17 @@ export default class Settings extends Component {
 
   render() {
     return (
-      <div>
-        <Typography variant={'h4'}>Settings</Typography>
-        <Divider/>
-        <br/>
-        {this.props.children}
-      </div>
+      <Card>
+        <React.Fragment>
+          <CardContent>
+            <Typography variant="h5" color="text.secondary" gutterBottom>
+              Settings
+            </Typography>
+            <PgpSettings/>
+            {/*{this.props.children}*/}
+          </CardContent>
+        </React.Fragment>
+      </Card>
     );
   }
 }

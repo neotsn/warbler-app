@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { CssBaseline, ThemeProvider, Toolbar } from '@mui/material';
+import { Container, CssBaseline, Paper, ThemeProvider, Toolbar } from '@mui/material';
 import { createTheme, useTheme } from '@mui/material/styles';
 import { makeStyles, withStyles } from '@mui/styles';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -39,6 +39,13 @@ const styles = makeStyles(() => ({
     [useTheme().breakpoints.down('xs')]: {
       padding: useTheme().spacing(2)
     }
+  },
+  paper: {
+    display: 'flex',
+    margin: '0 auto',
+    width: '50vw',
+    border: `1px solid ${useTheme().palette.divider}`,
+    flexWrap: 'wrap'
   }
 }));
 
@@ -320,23 +327,31 @@ class App extends Component {
                 <Toolbar/>
                 {success ? <TransitionAlert severity={'success'} content={success}/> : null}
                 {error ? <TransitionAlert severity={'error'} content={`${error.message} [${error.code}]`}/> : null}
-                <Routes>
-                  <Route exact path={'/'}>
-                    <Route index element={<Home/>}/>
-                    <Route path="feed" element={
-                      <Feed
-                        user={this.state.user}
-                        onStatusUpdate={this.twitter.onStatusUpdate.bind(this)}
-                      />
-                    }/>
-                    <Route path="settings" element={
-                      <Settings
-                        user={this.state.user}
-                        onProfileUpdate={this.twitter.onProfileUpdate.bind(this)}
-                      />
-                    }/>
-                  </Route>
-                </Routes>
+                <Container maxWidth={'md'}>
+                  <Paper
+                    sx={{ mt: 4 }}
+                    elevation={1}
+                    className={this.classes.paper}
+                  >
+                    <Routes>
+                      <Route exact path={'/'}>
+                        <Route index element={<Home/>}/>
+                        <Route path="feed" element={
+                          <Feed
+                            user={this.state.user}
+                            onStatusUpdate={this.twitter.onStatusUpdate.bind(this)}
+                          />
+                        }/>
+                        <Route path="settings" element={
+                          <Settings
+                            user={this.state.user}
+                            onProfileUpdate={this.twitter.onProfileUpdate.bind(this)}
+                          />
+                        }/>
+                      </Route>
+                    </Routes>
+                  </Paper>
+                </Container>
               </main>
               <Navigation
                 isAuthenticated={!!isAuthenticated}
