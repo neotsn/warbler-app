@@ -32,7 +32,7 @@ const styles = theme => ({
 });
 
 class PgpKeyGenStepper extends Component {
-  constructor({ classes, props }) {
+  constructor({ classes, props } = {}) {
     super(props);
 
     this.classes = classes;

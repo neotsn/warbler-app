@@ -17,7 +17,7 @@ const styles = (theme) => ({
 class UserIdsContainer extends Component {
   static defaultUser = { name: '', email: '' };
 
-  constructor({ classes, props }) {
+  constructor({ classes, props } = {}) {
     super(props);
 
     this.classes = classes;

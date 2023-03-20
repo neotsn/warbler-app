@@ -3,7 +3,7 @@ import TwitterStatus from '../components/TwitterStatus';
 import { Divider } from '@mui/material';
 
 export default class Feed extends Component {
-  constructor({ classes, props }) {
+  constructor({ classes, props } = {}) {
     super(props);
 
     this.classes = classes;

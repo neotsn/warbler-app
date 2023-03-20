@@ -13,7 +13,7 @@ const styles = theme => ({
 });
 
 class TransitionAlert extends Component {
-  constructor({ classes, props }) {
+  constructor({ classes, props } = {}) {
     super(props);
 
     this.handle = null;

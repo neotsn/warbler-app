@@ -21,7 +21,7 @@ class TabPanel extends Component {
     value: PropTypes.any.isRequired
   };
 
-  constructor({ classes, props }) {
+  constructor({ classes, props } = {}) {
     super(props);
 
     this.classes = classes;

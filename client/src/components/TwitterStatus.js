@@ -7,7 +7,7 @@ import StyledToggleButtonGroup from './StyledToggleButtonGroup';
 
 const styles = (theme) => ({
   container: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(2)
   },
   controls: {
     display: 'flex',

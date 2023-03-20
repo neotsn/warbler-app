@@ -17,7 +17,7 @@ const styles = (theme) => ({
  * Container for the input fields of a given UserID, with button to remove it
  */
 class UserIdRow extends Component {
-  constructor({ classes, props }) {
+  constructor({ classes, props } = {}) {
     super(props);
     this.classes = classes;
   }
