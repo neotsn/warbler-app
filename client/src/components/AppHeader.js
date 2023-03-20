@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppBar, Toolbar, Typography } from '@mui/material';
+import { AppBar, Toolbar } from '@mui/material';
 import { withStyles } from '@mui/styles';
 
 // Setup some styles using the theme settings
@@ -26,10 +26,16 @@ class AppHeader extends Component {
 
     return (
       <AppBar position={'fixed'} className={appBar}>
-        <Toolbar>
-          <Typography variant={'h6'} color={'inherit'}>
-            Warbler
-          </Typography>
+        <Toolbar disableGutters>
+          <img
+            style={{ width: '32px', height: '32px', margin: '1rem' }}
+            alt={'Warbler Logo'}
+            src={'/images/logo/white.png'}
+          />
+          <img
+            alt={'Warbler Wordmark'}
+            src={'/images/wordmark/white.png'}
+          />
           <div className={headerButtons}>
             {this.props.children}
           </div>
