@@ -51,11 +51,12 @@ class UserIdRow extends Component {
       <div className={this.classes.controls}>
         <TextField
           id={`name-${this.props.index}`}
-          label="Full Name"
+          label="Name"
           variant="outlined"
           value={this.props.name}
           helperText={'The name of a person associated to the Public Key'}
           onChange={this.onChangeName.bind(this)}
+          required={true}
         />
         <TextField
           id={`email-${this.props.index}`}
@@ -64,6 +65,7 @@ class UserIdRow extends Component {
           value={this.props.email}
           helperText={'Email address associated to the Public Key'}
           onChange={this.onChangeEmail.bind(this)}
+          required={true}
         />
         {this.props.showDelete
          ? <IconButton color={'default'} aria-label={'delete'} onClick={this.onDelete.bind(this)}><Delete/></IconButton>
