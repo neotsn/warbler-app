@@ -41,6 +41,7 @@ class PrivateKeyPassphrase extends Component {
       <FormControl className={this.classes.formControl} variant={'outlined'}>
         <InputLabel htmlFor={'private-key-passphrase'}>Private Key Passphrase</InputLabel>
         <OutlinedInput
+          label={'Private Key Passphrase'}
           id={'private-key-passphrase'}
           type={this.state.showPassphrase ? 'text' : 'password'}
           value={this.state.passphrase}
@@ -57,7 +58,6 @@ class PrivateKeyPassphrase extends Component {
               </IconButton>
             </InputAdornment>
           }
-          labelWidth={175}
         />
         <FormHelperText variant={'outlined'}>
           {'Without a passphrase, anyone with your private key can impersonate you.'}
