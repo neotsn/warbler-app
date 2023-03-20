@@ -226,17 +226,12 @@ app.post(API_ENDPOINTS.TWITTER_STATUS_UPDATE, addSocketId, (req, res) => {
     const socket = initSocket(req);
 
     try {
-      const { status, options } = req.query;
+      const { status } = req.query;
       const client = initClient(req);
-
-      const doThread = (options && options.indexOf('thread') > -1);
-      const doSign = (options && options.indexOf('sign') > -1);
 
       Tweets.postStatus({
         client,
         status,
-        doThread,
-        doSign,
         onError: (reason) => { onError(socket, reason); }
       })
         .then((tweetObject) => {
