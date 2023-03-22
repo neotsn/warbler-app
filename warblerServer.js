@@ -32,7 +32,7 @@ passport.use(
       const { session } = req;
       const { socketId } = session || {};
       // const { state, code } = req.query;
-      const { id: user_id, username: screen_name } = profile;
+      const { id: userId, username: username } = profile;
 
       return done(null, {
         tokens: {
@@ -43,7 +43,7 @@ passport.use(
         },
         socketId,
         profile,
-        userData: { user_id, screen_name }
+        userData: { userId, username }
       });
     }
   )
@@ -199,7 +199,7 @@ app.get(API_ENDPOINTS.TWITTER_USER_GET, addSocketId, (req, res) => {
     const socket = initSocket(req);
 
     try {
-      const { user_id: userId } = req.query;
+      const { userId } = req.query;
       new TwitterHelper({ req })
         .getUser({
           userId,

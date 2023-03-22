@@ -12,13 +12,18 @@ class LoginButton extends Component {
     };
   }
 
-  handleMenuClose = () => this.setState({ menuAnchorEl: null });
-  handleMenuOpen = (e) => this.setState({ menuAnchorEl: e.currentTarget });
-
-  logout = () => {
+  handleLogout() {
     this.handleMenuClose();
     this.props.doLogout();
-  };
+  }
+
+  handleMenuClose() {
+    this.setState({ menuAnchorEl: null });
+  }
+
+  handleMenuOpen(e) {
+    this.setState({ menuAnchorEl: e.currentTarget });
+  }
 
   render() {
     const { isAuthenticated, user } = this.props;
@@ -48,7 +53,7 @@ console.log(user);
           <IconButton
             ref={this.wrapper}
             color={'inherit'}
-            onClick={this.handleMenuOpen}>
+            onClick={this.handleMenuOpen.bind(this)}>
             <Avatar alt={username} src={profile_image_url}/>
           </IconButton>
           <Menu
@@ -56,9 +61,9 @@ console.log(user);
             anchorOrigin={menuPosition}
             transformOrigin={menuPosition}
             open={!!menuAnchorEl}
-            onClose={this.handleMenuClose}
+            onClose={this.handleMenuClose.bind(this)}
           >
-            <MenuItem onClick={this.logout}>
+            <MenuItem onClick={this.handleLogout.bind(this)}>
               <ListItemText primary={'Logout'} secondary={user && username}/>
             </MenuItem>
           </Menu>
