@@ -1,19 +1,21 @@
 import React, { Component, Fragment } from 'react';
+import AppHeader from './components/AppHeader';
+import Database from './helpers/Database';
+import Feed from './pages/Feed';
+import Home from './pages/Home';
+import LoginButton from './components/LoginButton';
+import Navigation from './components/Navigation';
+import Pgp from './helpers/Pgp';
+import Request from './helpers/Request';
+import Settings from './pages/Settings';
+import TransitionAlert from './components/TransitionAlert';
+import io from 'socket.io-client';
+import { API_ENDPOINTS, DB_FIELDS, DB_TABLES, SOCKET_EVENTS, URLS } from './constants';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Container, CssBaseline, Paper, ThemeProvider, Toolbar } from '@mui/material';
 import { createTheme, useTheme } from '@mui/material/styles';
-import { makeStyles, withStyles } from '@mui/styles';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { deepPurple, lightBlue } from '@mui/material/colors';
-import AppHeader from './components/AppHeader';
-import Navigation from './components/Navigation';
-import Home from './pages/Home';
-import Feed from './pages/Feed';
-import Settings from './pages/Settings';
-import { API_ENDPOINTS, DB_FIELDS, DB_TABLES, SOCKET_EVENTS, URLS } from './constants';
-import io from 'socket.io-client';
-import Request from './helpers/Request';
-import LoginButton from './components/LoginButton';
-import TransitionAlert from './components/TransitionAlert';
+import { makeStyles, withStyles } from '@mui/styles';
 
 // Setup the custom colors
 const theme = createTheme({
@@ -55,6 +57,8 @@ class App extends Component {
     super(props);
 
     this.classes = classes;
+    this.db = Database;
+    this.pgp = Pgp;
     this.socket = io(URLS.API_SERVER, {
       // withCredentials: true,
       // extraHeaders: {
@@ -70,7 +74,6 @@ class App extends Component {
     };
 
     /** @note These need to be in this order, they use from previous init methods */
-    this.initDb();
     this.initAuth();
     this.initPopup();
     this.initTwitter();
@@ -100,7 +103,7 @@ class App extends Component {
     this.auth = {
       /** Compile the common credentials passed to the Twitter Client API endpoints */
       buildTwitterClientCredentials: () => {
-        const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
+        const tokens = this.db.getField({ field: DB_TABLES.TWITTER_TOKENS });
 
         return Object.assign({}, {
           socketId: this.socket.id,
@@ -130,24 +133,24 @@ class App extends Component {
 
       /** Clears out the user's info when the card is closed */
       doLogout: () => {
-        this.db.set({ property: DB_TABLES.TWITTER_TOKENS });
+        this.db.setField({ field: DB_TABLES.TWITTER_TOKENS });
         this.setState({ user: {} });
       },
 
       /** Request the User Object from the Twitter Client API */
       getUser: () => {
         // Pull the Tokens
-        const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
+        const tokens = this.db.getField({ field: DB_TABLES.TWITTER_TOKENS });
 
         // Check that we've authenticated before
-        if (tokens && tokens.hasOwnProperty('user_id')) {
-          const { user_id } = tokens;
+        if (tokens && tokens.hasOwnProperty(DB_FIELDS.TWITTER_TOKENS.USERID)) {
+          const { userId } = tokens;
 
-          if (user_id && user_id.length) {
+          if (!!userId) {
             fetch(Request.makeUrl({
               host: URLS.API_SERVER,
               uri: API_ENDPOINTS.TWITTER_USER_GET,
-              requestParams: Object.assign(this.auth.buildTwitterClientCredentials(), { user_id })
+              requestParams: Object.assign(this.auth.buildTwitterClientCredentials(), { userId })
             }))
               .catch(console.error);
           }
@@ -156,7 +159,7 @@ class App extends Component {
 
       /** Return true if there is a known secret in the token store */
       isAuthenticated: () => {
-        const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
+        const tokens = this.db.getField({ field: DB_TABLES.TWITTER_TOKENS });
         return (tokens && tokens.hasOwnProperty(DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN));
       }
     };
@@ -179,38 +182,6 @@ class App extends Component {
     };
   }
 
-  /** Configure a db property with LocalStorage getter/setter overrides */
-  initDb() {
-    this.db = {
-      /**
-       * Get a value from the LocalStorage database
-       * @param property
-       * @returns {string|boolean}
-       */
-      get({ property } = {}) {
-        if (property.length) {
-          return JSON.parse(window.localStorage.getItem(property)) || '';
-        }
-        console.log('Error: No db property defined to store');
-        return false;
-      },
-
-      /**
-       * Set a value to the LocalStorage database
-       * @param property
-       * @param value
-       */
-      set({ property, value = '' } = {}) {
-        if (property.length) {
-          window.localStorage.setItem(property, JSON.stringify(value));
-          return true;
-        }
-        console.log('Error: No db property defined to store');
-        return false;
-      }
-    };
-  }
-
   /** Setup some methods and property to manage popup windows */
   initPopup() {
     this.popup = { window: null };
@@ -225,7 +196,7 @@ class App extends Component {
           clearInterval(check);
           this.setState({ disabled: '' });
         }
-      }, 1000);
+      }, 500);
     };
 
     /**
@@ -252,16 +223,20 @@ class App extends Component {
       /** Handle the Twitter Authentication event */
       onAuth: ({ response } = {}) => {
         const { tokens, userData } = response;
-        const { user_id, screen_name } = userData;
+        const { userId, username } = userData;
 
         // Close the popup
         this.popup.window.close();
 
         // DB-stored credentials
-        this.db.set({
-          property: DB_TABLES.TWITTER_TOKENS,
+        this.db.setField({
+          field: DB_TABLES.TWITTER_TOKENS,
           // Inject the username to auto-login the user on revisit
-          value: Object.assign({}, tokens, { user_id, screen_name })
+          value: {
+            ...tokens,
+            userId,
+            username
+          }
         });
 
         // Immediately go fetch the User Object...
@@ -269,12 +244,37 @@ class App extends Component {
       },
       /** Handle sending the Tweet/Status Update */
       onStatusUpdate: ({ data } = {}) => {
-        const { status, options } = data;
+        const { status, options, passphrase } = data;
+
+        const doThread = (options && options.indexOf('thread') > -1);
+        const doSign = (options && options.indexOf('sign') > -1);
+
+        let content = status;
+        let signature = null;
+
+        if (doThread && doSign) {
+          /** @todo Thread the tweet content and sign each post in the thread, and then sign the thread */
+          // content = status;
+        } else if (doThread) {
+          /** @TODO Only thread the tweet content */
+          // content = status;
+        } else if (doSign) {
+          /** @TODO Only sign the tweet content */
+          signature = this.pgp.createSignature({ passphrase, text: status });
+          console.log('signature', signature);
+          /** @todo Change Signature to be a verification URL at Warbler */
+          content = `${content}\n🔑`;
+        } else {
+          // content = status;
+        }
 
         fetch(Request.makeUrl({
           host: URLS.API_SERVER,
           uri: API_ENDPOINTS.TWITTER_STATUS_UPDATE,
-          requestParams: Object.assign({}, this.auth.buildTwitterClientCredentials(), { status, options })
+          requestParams: {
+            ...this.auth.buildTwitterClientCredentials(),
+            status: content
+          }
         }), {
           method: 'POST'
         })

@@ -13,6 +13,7 @@ export default class Settings extends Component {
   }
 
   render() {
+    const { user } = this.props;
     return (
       <Card>
         <React.Fragment>
@@ -20,7 +21,9 @@ export default class Settings extends Component {
             <Typography variant="h5" color="text.secondary" gutterBottom>
               Settings
             </Typography>
-            <PgpSettings/>
+            <PgpSettings
+              user={user}
+            />
             {/*{this.props.children}*/}
           </CardContent>
         </React.Fragment>

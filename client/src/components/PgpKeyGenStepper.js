@@ -42,23 +42,21 @@ class PgpKeyGenStepper extends Component {
       activeStep: 0,
       curve: 'curve25519',
       passphrase: null,
-      userIds: []
+      userIDs: []
     };
   }
 
   doGenerate(e) {
-    const { curve, passphrase, userIds } = this.state;
-    this.setState({ isGenerating: true });
-
-    // this.props.pgp.doKeyGen({ curve, passphrase, userIds });
-  };
+    const { curve, passphrase, userIDs } = this.state;
+    this.props.doKeyGen({ curve, passphrase, userIDs });
+  }
 
   doReset() {
     this.setState({ activeStep: 0 });
-  };
+  }
 
   getSteps() {
-    const { curves } = this.props;
+    const { curves, user } = this.props;
     return [
       {
         label: 'Select Elliptic Curve',
@@ -87,7 +85,10 @@ class PgpKeyGenStepper extends Component {
         content: <PrivateKeyPassphrase onChangePassphrase={this.onChangePassphrase.bind(this)}/>
       }, {
         label: 'Add User IDs',
-        content: <UserIdsContainer onChangeUserIds={this.onChangeUserIds.bind(this)}/>
+        content: <UserIdsContainer
+          onChangeUserIds={this.onChangeUserIds.bind(this)}
+          user={user}
+        />
       }
     ];
   }
@@ -104,9 +105,9 @@ class PgpKeyGenStepper extends Component {
     this.setState({ passphrase });
   }
 
-  onChangeUserIds({ userIds }) {
-    this.setState({ userIds });
-  };
+  onChangeUserIds({ userIDs }) {
+    this.setState({ userIDs });
+  }
 
   onNext() {
     this.setState({ activeStep: this.state.activeStep + 1 });

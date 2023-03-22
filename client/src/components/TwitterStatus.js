@@ -4,6 +4,7 @@ import { withStyles } from '@mui/styles';
 import { ViewStream, VpnKey } from '@mui/icons-material';
 import twitterText from 'twitter-text';
 import StyledToggleButtonGroup from './StyledToggleButtonGroup';
+import PrivateKeyPassphrase from './PrivateKeyPassphrase';
 
 const styles = (theme) => ({
   container: {
@@ -26,6 +27,7 @@ class TwitterStatus extends Component {
     this.state = {
       options: [],
       content: '',
+      passphrase: null,
       characterCount: 0,
       maxCharacters: 280
     };
@@ -34,6 +36,10 @@ class TwitterStatus extends Component {
   componentDidMount() {
     this.setState({ options: ['sign'] });
   }
+
+  onChangePassphrase({ passphrase }) {
+    this.setState({ passphrase });
+  };
 
   /**
    * Update a Character Count as the user types
@@ -67,7 +73,8 @@ class TwitterStatus extends Component {
     this.props.onStatusUpdate({
       data: {
         status: this.state.content,
-        options: this.state.options
+        options: this.state.options,
+        passphrase: this.state.passphrase
       }
     });
   };
@@ -89,6 +96,9 @@ class TwitterStatus extends Component {
           fullWidth={true}
           helperText={`${characterCount}/${maxCharacters}`}
           onChange={this.onInputChange}
+        />
+        <PrivateKeyPassphrase
+          onChangePassphrase={this.onChangePassphrase.bind(this)}
         />
         <Divider/>
         <div className={this.classes.controls}>

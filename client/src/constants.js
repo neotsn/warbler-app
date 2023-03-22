@@ -15,6 +15,8 @@ exports.DB_FIELDS = {
   TWITTER_TOKENS: {
     ACCESS_TOKEN: 'accessToken',
     REFRESH_TOKEN: 'refreshToken',
+    USERNAME: 'username',
+    USERID: 'userId',
     // CODE: 'code',
     // STATE: 'state',
     OAUTH_VERIFIER: 'oauth_verifier'
@@ -25,6 +27,10 @@ exports.DB_FIELDS = {
  * Export the LocalStorage Database Table names
  */
 exports.DB_TABLES = {
+  PGP_PUBLIC: 'warbler.pgp.public',
+  PGP_PRIVATE: 'warbler.pgp.private',
+  PGP_REVOKE: 'warbler.pgp.revoke',
+  PGP_FINGER: 'warbler.pgp.finger',
   TWITTER_TOKENS: 'warbler.twitter.tokens'
 };
 
@@ -44,6 +50,6 @@ exports.SOCKET_EVENTS = {
  * Application URLs
  */
 exports.URLS = {
-  API_SERVER: process.env.BASE_API_URL,
-  CLIENT: process.env.BASE_CLIENT_URL
+  API_SERVER: 'http://127.0.0.1:3100',
+  CLIENT: 'http://127.0.0.1:3000'
 };

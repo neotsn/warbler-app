@@ -22,53 +22,65 @@ class UserIdsContainer extends Component {
 
     this.classes = classes;
     this.state = {
-      userIds: []
+      userIDs: []
     };
   }
 
   componentDidMount() {
-    this.onAddUserId();
+    this.doAddDefaultUser();
+  }
+
+  doAddDefaultUser() {
+    if (this.state.userIDs.length === 0) {
+      const { user } = this.props;
+      const { username } = user || {};
+      const defaultUser = { name: `@${username}`, email: '' };
+
+      const userIDs = [defaultUser];
+
+      this.setState({ userIDs });
+    }
   }
 
   onAddUserId() {
-    let { userIds } = this.state;
+    let { userIDs } = this.state;
 
-    userIds.push(Object.assign({}, UserIdsContainer.defaultUser));
+    userIDs.push(Object.assign({}, UserIdsContainer.defaultUser));
 
-    this.setState({ userIds });
-    this.props.onChangeUserIds({ userIds });
+    this.setState({ userIDs });
+    this.props.onChangeUserIds({ userIDs });
   };
 
   onChangeUserId({ index, name, email }) {
-    let { userIds } = this.state;
+    let { userIDs } = this.state;
 
-    userIds[index].name = name;
-    userIds[index].email = email;
+    userIDs[index].name = name;
+    userIDs[index].email = email;
 
-    this.setState({ userIds });
-    this.props.onChangeUserIds({ userIds });
+    this.setState({ userIDs });
+    this.props.onChangeUserIds({ userIDs });
   };
 
   onDeleteUserId({ index }) {
-    const { userIds } = this.state;
+    const { userIDs } = this.state;
 
     // Drop this index...
-    delete userIds[index];
+    delete userIDs[index];
 
-    if (Object.values(userIds).length === 0) {
-      // No more userIds, so put one back...
-      userIds.push(Object.assign({}, UserIdsContainer.defaultUser));
+    if (Object.values(userIDs).length === 0) {
+      // No more userIDs, so put one back...
+      userIDs.push(Object.assign({}, UserIdsContainer.defaultUser));
     }
 
-    this.setState({ userIds });
-    this.props.onChangeUserIds({ userIds });
+    this.setState({ userIDs });
+    this.props.onChangeUserIds({ userIDs });
   };
 
   render() {
     return (
       <div>
         <div id={'userid-rows'}>
-          {Object.values(this.state.userIds || []).map((userData, index) => {
+          {Object.values(this.state.userIDs).map((userData, index) => {
             return <UserIdRow
               key={index}
               index={index}
@@ -76,7 +88,7 @@ class UserIdsContainer extends Component {
               email={userData.email}
               onChangeUserId={this.onChangeUserId.bind(this)}
               onDeleteUserId={this.onDeleteUserId.bind(this)}
-              showDelete={Object.values(this.state.userIds || []).length > 1}
+              showDelete={Object.values(this.state.userIDs || []).length > 1}
             />;
           })}
         </div>
