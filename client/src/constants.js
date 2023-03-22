@@ -5,7 +5,6 @@ exports.API_ENDPOINTS = {
   TWITTER_AUTH: '/twitter',
   TWITTER_AUTH_CALLBACK: '/twitter/callback',
   TWITTER_USER_GET: '/twitter/user/get',
-  TWITTER_USER_UPDATE: '/twitter/user/update',
   TWITTER_STATUS_UPDATE: '/twitter/status/update'
 };
 
@@ -14,8 +13,10 @@ exports.API_ENDPOINTS = {
  */
 exports.DB_FIELDS = {
   TWITTER_TOKENS: {
-    ACCESS_TOKEN_KEY: 'access_token_key',
-    ACCESS_TOKEN_SECRET: 'access_token_secret',
+    ACCESS_TOKEN: 'accessToken',
+    REFRESH_TOKEN: 'refreshToken',
+    // CODE: 'code',
+    // STATE: 'state',
     OAUTH_VERIFIER: 'oauth_verifier'
   }
 };
@@ -43,6 +44,6 @@ exports.SOCKET_EVENTS = {
  * Application URLs
  */
 exports.URLS = {
-  API_SERVER: 'http://localhost:3100',
-  CLIENT: 'http://localhost:3000'
+  API_SERVER: process.env.BASE_API_URL,
+  CLIENT: process.env.BASE_CLIENT_URL
 };

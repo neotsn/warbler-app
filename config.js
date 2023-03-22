@@ -7,8 +7,8 @@ exports.TWITTER_PASSPORT_CONFIG = {
 };
 
 exports.TWITTER_CLIENT_CONFIG = {
-  consumer_key: process.env.TWITTER_CONSUMER_KEY,
-  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  clientId: process.env.TWITTER_OAUTH2_CLIENTID,
+  clientSecret: process.env.TWITTER_OAUTH2_CLIENTSECRET,
   // Filled in with the passport token & secret
   access_token_key: null,
   access_token_secret: null

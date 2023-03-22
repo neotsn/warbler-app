@@ -23,7 +23,7 @@ class LoginButton extends Component {
   render() {
     const { isAuthenticated, user } = this.props;
     const { menuAnchorEl } = this.state;
-    const { screen_name, profile_image_url_https } = user;
+    const { username, profile_image_url } = user;
 
     if (isAuthenticated === null) {
       return null;
@@ -42,14 +42,14 @@ class LoginButton extends Component {
         vertical: 'top',
         horizontal: 'right'
       };
-
+console.log(user);
       return (
         <div>
           <IconButton
             ref={this.wrapper}
             color={'inherit'}
             onClick={this.handleMenuOpen}>
-            <Avatar alt={screen_name} src={profile_image_url_https}/>
+            <Avatar alt={username} src={profile_image_url}/>
           </IconButton>
           <Menu
             anchorEl={menuAnchorEl}
@@ -59,7 +59,7 @@ class LoginButton extends Component {
             onClose={this.handleMenuClose}
           >
             <MenuItem onClick={this.logout}>
-              <ListItemText primary={'Logout'} secondary={user && screen_name}/>
+              <ListItemText primary={'Logout'} secondary={user && username}/>
             </MenuItem>
           </Menu>
         </div>

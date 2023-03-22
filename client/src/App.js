@@ -104,8 +104,7 @@ class App extends Component {
 
         return Object.assign({}, {
           socketId: this.socket.id,
-          access_token_key: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_KEY] || null,
-          access_token_secret: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_SECRET] || null
+          accessToken: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN] || null
         });
       },
 
@@ -158,7 +157,7 @@ class App extends Component {
       /** Return true if there is a known secret in the token store */
       isAuthenticated: () => {
         const tokens = this.db.get({ property: DB_TABLES.TWITTER_TOKENS });
-        return (tokens && tokens.hasOwnProperty(DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN_SECRET));
+        return (tokens && tokens.hasOwnProperty(DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN));
       }
     };
 
@@ -268,19 +267,6 @@ class App extends Component {
         // Immediately go fetch the User Object...
         this.auth.getUser();
       },
-      /** Handle sending the new profile data to the API Server */
-      onProfileUpdate: ({ data } = {}) => {
-        const { description } = data;
-
-        fetch(Request.makeUrl({
-          host: URLS.API_SERVER,
-          uri: API_ENDPOINTS.TWITTER_USER_UPDATE,
-          requestParams: Object.assign({}, this.auth.buildTwitterClientCredentials(), { description })
-        }), {
-          method: 'POST'
-        })
-          .catch(console.error);
-      },
       /** Handle sending the Tweet/Status Update */
       onStatusUpdate: ({ data } = {}) => {
         const { status, options } = data;
@@ -345,7 +331,6 @@ class App extends Component {
                         <Route path="settings" element={
                           <Settings
                             user={this.state.user}
-                            onProfileUpdate={this.twitter.onProfileUpdate.bind(this)}
                           />
                         }/>
                       </Route>

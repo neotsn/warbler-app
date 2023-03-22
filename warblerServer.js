@@ -1,22 +1,69 @@
-const express = require('express');
-const http = require('http');
-const passport = require('passport');
-const Twitter = require('twitter-lite');
-const session = require('express-session');
+const TwitterHelper = require('./helpers/TwitterHelper');
 const cors = require('cors');
+const express = require('express');
+const passport = require('passport');
+const session = require('express-session');
 const socketio = require('socket.io');
-const twitterText = require('twitter-text');
+const { Strategy } = require('@superfaceai/passport-twitter-oauth2');
+const { URLS, API_ENDPOINTS, SOCKET_EVENTS } = require('./client/src/constants');
+const { createServer } = require('http');
+const { onError } = require('./helpers/ResponseHelper');
+const Tweets = require('./helpers/Tweets');
+
 // Prepare for Environmental Variables
 require('dotenv').config();
 
-const { Strategy: TwitterStrategy } = require('@passport-js/passport-twitter');
-const { API_ENDPOINTS, DB_FIELDS, DB_TABLES, SOCKET_EVENTS, URLS } = require('./client/src/constants');
-const { TWITTER_PASSPORT_CONFIG, TWITTER_CLIENT_CONFIG } = require('./config');
-const Tweets = require('./helpers/Tweets');
+// <1> Serialization and deserialization
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
 
-// Create the server and allow express and sockets to run on the same port
+// Use the Twitter OAuth2 strategy within Passport
+passport.use(
+  new Strategy(
+    {
+      clientID: process.env.TWITTER_OAUTH2_CLIENTID,
+      clientSecret: process.env.TWITTER_OAUTH2_CLIENTSECRET,
+      clientType: 'confidential',
+      callbackURL: `${process.env.BASE_API_URL}/twitter/callback`,
+      passReqToCallback: true
+    },
+    // <3> Verify callback
+    (req, accessToken, refreshToken, profile, done) => {
+      const { session } = req;
+      const { socketId } = session || {};
+      // const { state, code } = req.query;
+      const { id: user_id, username: screen_name } = profile;
+
+      return done(null, {
+        tokens: {
+          accessToken,
+          refreshToken
+          // state,
+          // code
+        },
+        socketId,
+        profile,
+        userData: { user_id, screen_name }
+      });
+    }
+  )
+);
+
+/**
+ * Middleware
+ * @param saveUninitialized When true, should allow us to attach the socket id to the session before we have authenticated with Twitter
+ */
+const sessionMiddleware = session({
+  secret: 'WarblerServer',
+  resave: true,
+  saveUninitialized: true,
+  cookie: {
+    secure: 'auto'
+  }
+});
+
 const app = express();
-const server = http.createServer(app);
+const server = createServer(app);
 const io = socketio(server, {
   cors: {
     origin: URLS.CLIENT,
@@ -26,6 +73,7 @@ const io = socketio(server, {
 
 // Allows the application to accept JSON and use passport
 app.use(express.json());
+// Passport and session middleware initialization
 app.use(passport.initialize());
 
 // Set up cors to allow us to accept requests from our client
@@ -33,64 +81,48 @@ app.use(cors({
   origin: URLS.CLIENT
 }));
 
-// saveUninitialized: true allows us to attach the socket id
-// to the session before we have authenticated with Twitter
-app.use(session({
-  secret: 'WarblerServer',
-  resave: true,
-  saveUninitialized: true,
-  cookie: {
-    secure: 'auto'
-  }
-}));
+// Setup the session
+io.engine.use(sessionMiddleware);
+app.use(sessionMiddleware);
 app.use(passport.session());
 
-// allows us to save the user into the session
-passport.serializeUser((user, cb) => cb(null, user));
-passport.deserializeUser((obj, cb) => cb(null, obj));
-
-// Basic setup with passport and Twitter
-passport.use(new TwitterStrategy(TWITTER_PASSPORT_CONFIG, (access_token_key, access_token_secret, profile, done) => {
-  // save the user right here to a database if you want
-  done(null, {
-    tokens: {
-      access_token_key,
-      access_token_secret
-    },
-    userData: {
-      user_id: profile._json.id_str,
-      screen_name: profile.username
-    }
-  });
-}));
-
-// Middleware that triggers the PassportJs authentication process
-const twitterAuth = passport.authenticate('twitter');
-
 /**
+ * Middleware
+ * Triggers the PassportJs authentication process
+ */
+const twitterAuth = passport.authenticate('twitter', {
+  scope: ['tweet.read', 'users.read', 'tweet.write', 'offline.access'],
+  session: true
+});
+
+/** Setup the socket from the request data */
+const initSocket = (req) => io.in(req.session.socketId);
+/**
+ * Middleware
  * This call adds a custom middleware to pick off the socket id (that was put on req.query)
- * and stores it in the session so we can send back the right info to the right socket
+ * and stores it in the session, so we can send back the right info to the right socket
  */
 const addSocketId = (req, res, next) => {
   req.session.socketId = req.query.socketId;
   next();
 };
-
 /**
- * Setup the socket from the request data
- */
-const initSocket = (req) => {
-  return io.in(req.session.socketId);
-};
-
-/**
- * Wrap the actual API request in a socket ID verification so it is skipped if
+ * Middleware
+ * Wrap the actual API request in a socket ID verification, so it is skipped if
  * the response cannot be returned to the app. Minimizes excess API calls
- * @param {Object} req
- * @param {Object} res
- * @param {function} cb
  */
 const verifySocket = (req, res, cb) => {
+  const { session } = req;
+  const { passport } = session || {};
+  const { user } = passport || {};
+  const { socketId } = user || {};
+
+  const hasAuthSocketId = typeof socketId !== 'undefined' && socketId !== 'undefined';
+
+  if (hasAuthSocketId) {
+    req.session.socketId = socketId;
+  }
+
   if (typeof req.session.socketId !== 'undefined' && req.session.socketId !== 'undefined') {
     cb(req, res);
   } else {
@@ -100,58 +132,13 @@ const verifySocket = (req, res, cb) => {
 };
 
 /**
- * Setup the Twitter Client from the request data
- */
-const initClient = (req) => {
-  const { access_token_key, access_token_secret } = req.query;
-
-  return new Twitter(Object.assign({}, TWITTER_CLIENT_CONFIG, {
-    access_token_key,
-    access_token_secret
-  }));
-};
-
-/**
- * Handler for the error-exception response processing from twitter-lite
- */
-const onError = (socket, e) => {
-  // Twitter Client will throw an exception if there is an error.
-  // Catch it to handle consistently.
-  let error = {};
-
-  if ('errors' in e) {
-    // Twitter API error
-    if (e.errors[0].code === 88) {
-      // rate limit exceeded
-      error = {
-        message: `Rate limit will reset on ${new Date(e._headers.get('x-rate-limit-reset') * 1000)}`,
-        code: 88
-      };
-    } else {
-      // some other kind of error, e.g. read-only API trying to POST
-      error = {
-        message: e.errors[0].message,
-        code: e.errors[0].code
-      };
-    }
-  } else {
-    // non-API error, e.g. network problem or invalid JSON in response
-    error = {
-      message: 'There was a problem with the network or response.',
-      code: 9641
-    };
-  }
-
-  console.log(error, e);
-  socket.emit(SOCKET_EVENTS.ERROR, error);
-};
-
-/**
+ * <5> Start authentication flow
  * This is endpoint triggered by the popup on the client which starts the whole authentication process
  */
 app.get(API_ENDPOINTS.TWITTER_AUTH, addSocketId, twitterAuth);
 
 /**
+ * <7> Callback handler
  * This is the endpoint that Twitter sends the user information to.
  * The twitterAuth middleware attaches the user to req.user and then
  * the user info is sent to the client via the socket id that is in the
@@ -159,8 +146,47 @@ app.get(API_ENDPOINTS.TWITTER_AUTH, addSocketId, twitterAuth);
  */
 app.get(API_ENDPOINTS.TWITTER_AUTH_CALLBACK, twitterAuth, (req, res) => {
   verifySocket(req, res, async (req, res) => {
-    initSocket(req)
-      .emit(SOCKET_EVENTS.TWITTER_AUTH, req.user);
+    const socket = initSocket(req);
+
+    /** @note None of this works. There is no codeVerifier or sessionState */
+    // // Extract state and code from query string
+    // const { state, code } = req.query;
+    // // Get the saved codeVerifier from session
+    // const { codeVerifier, state: sessionState } = req.session;
+    //
+    // if (!codeVerifier || !state || !sessionState || !code) {
+    //   onError(socket, 'You denied the app or your session expired!');
+    // } else if (state !== sessionState) {
+    //   onError(socket, 'Stored tokens didnt match!');
+    // } else {
+    socket.emit(SOCKET_EVENTS.TWITTER_AUTH, req.user);
+    // }
+  });
+});
+
+app.post(API_ENDPOINTS.TWITTER_STATUS_UPDATE, addSocketId, (req, res) => {
+  verifySocket(req, res, async (req, res) => {
+    const socket = initSocket(req);
+
+    try {
+      const { status } = req.query;
+      /** @todo Handle reply/thread functionality */
+      const replyToId = null;
+
+      new TwitterHelper({ req })
+        .postStatus({
+          status,
+          onError: (reason) => onError(socket, reason),
+          replyToId
+        })
+        .then((response) => {
+          // const response = { tweet, data: { id: '123456789', text: status } };
+          const { tweet, data } = response;
+          console.log(tweet);
+        });
+    } catch (e) {
+      onError(socket, e);
+    }
   });
 });
 
@@ -173,81 +199,25 @@ app.get(API_ENDPOINTS.TWITTER_USER_GET, addSocketId, (req, res) => {
     const socket = initSocket(req);
 
     try {
-      const { user_id } = req.query;
-
-      const userObject = await initClient(req)
-        .get('/users/show', {
-          user_id,
-          include_entities: true
+      const { user_id: userId } = req.query;
+      new TwitterHelper({ req })
+        .getUser({
+          userId,
+          onError: (error) => onError(socket, error)
+        })
+        .then((userObject) => {
+          if (userObject) {
+            socket.emit(SOCKET_EVENTS.TWITTER_USER_GET, userObject.data);
+          } else {
+            return 'No User Object returned.';
+          }
         });
-
-      if (userObject) {
-        socket.emit(SOCKET_EVENTS.TWITTER_USER_GET, userObject);
-      } else {
-        return 'No User Object returned.';
-      }
     } catch (e) {
       onError(socket, e);
     }
   });
 });
 
-/**
- * Sends updated fields to the user update API
- */
-app.post(API_ENDPOINTS.TWITTER_USER_UPDATE, addSocketId, (req, res) => {
-  verifySocket(req, res, async (req, res) => {
-    const socket = initSocket(req);
-
-    try {
-      const { description } = req.query;
-
-      const userObject = await initClient(req)
-        .post('/account/update_profile', {
-          description,
-          include_entities: true,
-          skip_status: 1
-        });
-
-      if (userObject) {
-        socket.emit(SOCKET_EVENTS.TWITTER_USER_UPDATE, userObject);
-        socket.emit(SOCKET_EVENTS.SUCCESS, 'Profile description successfully updated.');
-      } else {
-        return 'No User object returned';
-      }
-    } catch (e) {
-      onError(socket, e);
-    }
-  });
-});
-
-app.post(API_ENDPOINTS.TWITTER_STATUS_UPDATE, addSocketId, (req, res) => {
-  verifySocket(req, res, async (req, res) => {
-    const socket = initSocket(req);
-
-    try {
-      const { status } = req.query;
-      const client = initClient(req);
-
-      Tweets.postStatus({
-        client,
-        status,
-        onError: (reason) => { onError(socket, reason); }
-      })
-        .then((tweetObject) => {
-          const { id_str } = tweetObject;
-          console.log(tweetObject);
-        });
-
-    } catch (e) {
-      onError(socket, e);
-    }
-  });
-});
-
-/**
- * Start the server
- */
 server.listen(3100, () => {
-  console.log('listening...');
+  console.log(`Listening on ${process.env.BASE_API_URL}`);
 });
