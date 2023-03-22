@@ -49,7 +49,7 @@ class PgpSettings extends Component {
         <AccordionDetails>
           <Tabs
             value={this.state.tab}
-            onChange={this.onChangeTab}
+            onChange={this.onChangeTab.bind(this)}
             indicatorColor={'primary'}
             textColor={'inherit'}
             centered
