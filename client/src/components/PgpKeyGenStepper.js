@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, FormControl, FormHelperText, InputLabel, Link, Paper, Select, Step, StepContent, StepLabel, Stepper } from '@mui/material';
+import { Button, FormControl, FormHelperText, InputLabel, Link, MenuItem, Select, Stack, Step, StepContent, StepLabel, Stepper } from '@mui/material';
 import { withStyles } from '@mui/styles';
 import PrivateKeyPassphrase from './PrivateKeyPassphrase';
 import UserIdsContainer from './UserIdsContainer';
@@ -9,9 +9,11 @@ const styles = theme => ({
   root: {
     width: '100%'
   },
-  button: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1)
+  buttonRow: {
+    display: 'flex',
+    alignContent: 'center',
+    justifyContent: 'flex-end',
+    paddingTop: theme.spacing(1)
   },
   actionsContainer: {
     display: 'flex',
@@ -20,7 +22,7 @@ const styles = theme => ({
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1)
   },
-  resetContainer: {
+  finishContainer: {
     padding: theme.spacing(3)
   },
   formControl: {
@@ -39,7 +41,6 @@ class PgpKeyGenStepper extends Component {
     this.state = {
       activeStep: 0,
       curve: 'curve25519',
-      isGenerating: false,
       passphrase: null,
       userIds: []
     };
@@ -65,16 +66,15 @@ class PgpKeyGenStepper extends Component {
           <FormControl className={this.classes.formControl}>
             <InputLabel id={'ecc-curve-label'}>Elliptic Curve</InputLabel>
             <Select
-              native
-              autoWidth={true}
+              label={'Elliptic Curve'}
               labelId={'ecc-curve-label'}
               id={'ecc-curve'}
               name={'ecc-curve'}
               value={this.state.curve}
-              onChange={this.onChangeCurve}
+              onChange={this.onChangeCurve.bind(this)}
             >
               {curves.map((curveKey) => {
-                return <option value={curveKey} key={curveKey}>{curveKey}</option>;
+                return <MenuItem value={curveKey} key={curveKey}>{curveKey}</MenuItem>;
               })}
             </Select>
             <FormHelperText variant={'standard'}>
@@ -90,19 +90,19 @@ class PgpKeyGenStepper extends Component {
         content: <UserIdsContainer onChangeUserIds={this.onChangeUserIds.bind(this)}/>
       }
     ];
-  };
+  }
 
   onBack() {
     this.setState({ activeStep: this.state.activeStep - 1 });
-  };
+  }
 
   onChangeCurve(e) {
-    this.setState({ curve: e.currentTarget.value });
-  };
+    this.setState({ curve: e.target.value });
+  }
 
   onChangePassphrase({ passphrase }) {
     this.setState({ passphrase });
-  };
+  }
 
   onChangeUserIds({ userIds }) {
     this.setState({ userIds });
@@ -110,7 +110,7 @@ class PgpKeyGenStepper extends Component {
 
   onNext() {
     this.setState({ activeStep: this.state.activeStep + 1 });
-  };
+  }
 
   render() {
     const steps = this.getSteps();
@@ -123,40 +123,36 @@ class PgpKeyGenStepper extends Component {
               <StepLabel>{step.label}</StepLabel>
               <StepContent>
                 {step.content}
-                <div className={this.classes.actionsContainer}>
+                <Stack spacing={2} direction={'row'} className={this.classes.buttonRow}>
                   <Button
                     disabled={this.state.activeStep === 0}
                     onClick={this.onBack.bind(this)}
-                    className={this.classes.button}
-                  >
-                    Back
-                  </Button>
+                  > Previous </Button>
                   <Button
                     variant="contained"
                     color="primary"
                     onClick={this.onNext.bind(this)}
-                    className={this.classes.button}
                   >
                     {this.state.activeStep === steps.length - 1 ? 'Finish' : 'Next'}
                   </Button>
-                </div>
+                </Stack>
               </StepContent>
             </Step>
           ))}
         </Stepper>
         {this.state.activeStep === steps.length && (
-          <Paper square elevation={0} className={this.classes.resetContainer}>
-            <Button onClick={this.doReset.bind(this)} className={this.classes.button}>
-              Start Over
-            </Button>
+          <Stack spacing={2} direction={'row'} className={this.classes.finishContainer}>
+            <Button
+              onClick={this.doReset.bind(this)}
+            > Start Over </Button>
             <LoadingButton
               color={'primary'}
               label={'Generate'}
               variant={'contained'}
               onClick={this.doGenerate.bind(this)}
-              loading={this.state.isGenerating}
+              loading={this.props.isGenerating}
             />
-          </Paper>
+          </Stack>
         )}
       </div>
     );
