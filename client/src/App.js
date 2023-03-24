@@ -3,7 +3,6 @@ import AppHeader from './components/AppHeader';
 import Database from './helpers/Database';
 import Feed from './pages/Feed';
 import Home from './pages/Home';
-import LoginButton from './components/LoginButton';
 import Navigation from './components/Navigation';
 import Pgp from './helpers/Pgp';
 import Request from './helpers/Request';
@@ -16,6 +15,7 @@ import { Container, CssBaseline, Paper, ThemeProvider, Toolbar } from '@mui/mate
 import { createTheme, useTheme } from '@mui/material/styles';
 import { deepPurple, lightBlue } from '@mui/material/colors';
 import { makeStyles, withStyles } from '@mui/styles';
+import ProfileButton from './components/ProfileButton';
 
 // Setup the custom colors
 const theme = createTheme({
@@ -45,7 +45,6 @@ const styles = makeStyles(() => ({
   paper: {
     display: 'flex',
     margin: '0 auto',
-    width: '50vw',
     border: `1px solid ${useTheme().palette.divider}`,
     flexWrap: 'wrap'
   }
@@ -107,7 +106,8 @@ class App extends Component {
 
         return Object.assign({}, {
           socketId: this.socket.id,
-          accessToken: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN] || null
+          accessToken: tokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN] || null,
+          refreshToken: tokens[DB_FIELDS.TWITTER_TOKENS.REFRESH_TOKEN] || null
         });
       },
 
@@ -243,42 +243,31 @@ class App extends Component {
         this.auth.getUser();
       },
       /** Handle sending the Tweet/Status Update */
-      onStatusUpdate: ({ data } = {}) => {
-        const { status, options, passphrase } = data;
+      onSubmitTweet: ({ tweets } = {}) => {
+        let replyToId = null;
 
-        const doThread = (options && options.indexOf('thread') > -1);
-        const doSign = (options && options.indexOf('sign') > -1);
-
-        let content = status;
-        let signature = null;
-
-        if (doThread && doSign) {
-          /** @todo Thread the tweet content and sign each post in the thread, and then sign the thread */
-          // content = status;
-        } else if (doThread) {
-          /** @TODO Only thread the tweet content */
-          // content = status;
-        } else if (doSign) {
-          /** @TODO Only sign the tweet content */
-          signature = this.pgp.createSignature({ passphrase, text: status });
-          console.log('signature', signature);
-          /** @todo Change Signature to be a verification URL at Warbler */
-          content = `${content}\n🔑`;
-        } else {
-          // content = status;
-        }
-
-        fetch(Request.makeUrl({
-          host: URLS.API_SERVER,
-          uri: API_ENDPOINTS.TWITTER_STATUS_UPDATE,
-          requestParams: {
+        tweets.forEach((status) => {
+          const requestParams = {
             ...this.auth.buildTwitterClientCredentials(),
-            status: content
-          }
-        }), {
-          method: 'POST'
-        })
-          .catch(console.error);
+            status,
+            replyToId
+          };
+
+          const apiUrl = Request.makeUrl({
+            host: URLS.API_SERVER,
+            uri: API_ENDPOINTS.TWITTER_STATUS_UPDATE,
+            requestParams
+          });
+
+          fetch(apiUrl, { method: 'POST' })
+            .then((response) => {
+              // Extract the tweet id for threading
+              const { id } = response;
+              // Update the external variable
+              replyToId = id;
+            })
+            .catch(console.error);
+        });
       },
       /** Handle the Twitter User Object storage and mark as authenticated */
       onUser: ({ user } = {}) => {
@@ -300,47 +289,61 @@ class App extends Component {
           <ThemeProvider theme={theme}>
             <div className={root}>
               <CssBaseline/>
-              <AppHeader>
-                <LoginButton
-                  isAuthenticated={isAuthenticated}
-                  user={user}
-                  doLogin={this.auth.doLogin.bind(this)}
-                  doLogout={this.auth.doLogout.bind(this)}
-                />
-              </AppHeader>
-
+              {isAuthenticated && (
+                <AppHeader>
+                  <ProfileButton
+                    isAuthenticated={isAuthenticated}
+                    user={user}
+                    doLogout={this.auth.doLogout.bind(this)}
+                  />
+                </AppHeader>
+              )}
               <main className={content}>
-                <Toolbar/>
-                {success ? <TransitionAlert severity={'success'} content={success}/> : null}
-                {error ? <TransitionAlert severity={'error'} content={`${error.message} [${error.code}]`}/> : null}
                 <Container maxWidth={'md'}>
-                  <Paper
-                    sx={{ mt: 4 }}
-                    elevation={1}
-                    className={this.classes.paper}
-                  >
-                    <Routes>
-                      <Route exact path={'/'}>
-                        <Route index element={<Home/>}/>
-                        <Route path="feed" element={
+                  {isAuthenticated && (<Toolbar/>)}
+                  {isAuthenticated && success ? <TransitionAlert severity={'success'} content={success}/> : null}
+                  {error ? <TransitionAlert severity={'error'} content={`${error.message} [${error.code}]`}/> : null}
+                  <Routes>
+                    <Route exact path={'/'}>
+                      <Route index element={
+                        <Paper
+                          sx={{ mt: 4, px: 2, py: 2 }}
+                          elevation={4}
+                          className={this.classes.paper}
+                        >
+                          <Home
+                            doLogin={this.auth.doLogin.bind(this)}
+                          />
+                        </Paper>
+                      }/>
+                      <Route path="feed" element={
+                        <Paper
+                          sx={{ mt: 4, px: 2, py: 2 }}
+                          elevation={1}
+                          className={this.classes.paper}
+                        >
                           <Feed
                             user={this.state.user}
-                            onStatusUpdate={this.twitter.onStatusUpdate.bind(this)}
+                            onSubmitTweet={this.twitter.onSubmitTweet.bind(this)}
                           />
-                        }/>
-                        <Route path="settings" element={
+                        </Paper>
+                      }/>
+                      <Route path="settings" element={
+                        <Paper
+                          sx={{ mt: 4, px: 2, py: 2 }}
+                          elevation={1}
+                          className={this.classes.paper}
+                        >
                           <Settings
                             user={this.state.user}
                           />
-                        }/>
-                      </Route>
-                    </Routes>
-                  </Paper>
+                        </Paper>
+                      }/>
+                    </Route>
+                  </Routes>
                 </Container>
               </main>
-              <Navigation
-                isAuthenticated={!!isAuthenticated}
-              />
+              <Navigation isAuthenticated={!!isAuthenticated}/>
             </div>
           </ThemeProvider>
         </Fragment>

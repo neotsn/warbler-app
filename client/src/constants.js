@@ -41,6 +41,7 @@ exports.SOCKET_EVENTS = {
   ERROR: 'warbler.error',
   SUCCESS: 'warbler.success',
   TWITTER_AUTH: 'warbler.twitter.auth',
+  TWITTER_AUTH_REFRESH: 'warbler.twitter.auth.refresh',
   TWITTER_USER_GET: 'warbler.twitter.get.user',
   TWITTER_USER_UPDATE: 'warbler.twitter.update.user',
   WARNING: 'warbler.warning'

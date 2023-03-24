@@ -1,6 +1,6 @@
 import React from 'react';
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
-import { Home, Settings, ViewStream } from '@mui/icons-material';
+import { Settings, ViewStream } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 
 /**
@@ -22,7 +22,6 @@ const Navigation = (props) => {
           value={value}
           onChange={(event, newValue) => setValue(newValue)}
         >
-          <BottomNavigationAction component={Link} to="/" showLabel={true} label="Home" icon={<Home/>}/>
           <BottomNavigationAction component={Link} to="/feed" label="Feed" icon={<ViewStream/>}/>
           <BottomNavigationAction component={Link} to="/settings" label="Settings" icon={<Settings/>}/>
         </BottomNavigation>

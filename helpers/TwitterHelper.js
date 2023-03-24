@@ -1,13 +1,33 @@
+const { SOCKET_EVENTS } = require('../client/src/constants');
 const { TWITTER_CLIENT_CONFIG } = require('../config');
 const { TwitterApi } = require('twitter-api-v2');
+const { TwitterApiAutoTokenRefresher } = require('@twitter-api-v2/plugin-token-refresher');
 
 /** Handles the Twitter API interactions  */
 module.exports = class TwitterHelper {
-  constructor({ req } = {}) {
+  constructor({ req, socket } = {}) {
     /** @todo check what is needed for this */
     const { accessToken, refreshToken } = req.query;
 
-    this.api = new TwitterApi(accessToken);
+    const tokenCache = {
+      accessToken,
+      refreshToken
+    };
+
+    const autoRefresherPlugin = new TwitterApiAutoTokenRefresher({
+      refreshToken: tokenCache.refreshToken,
+      refreshCredentials: TWITTER_CLIENT_CONFIG,
+      onTokenUpdate(token) {
+        console.log('New Token', token);
+
+        tokenCache.accessToken = token.accessToken;
+        tokenCache.refreshToken = token.refreshToken;
+
+        socket.emit(SOCKET_EVENTS.TWITTER_AUTH_REFRESH, token);
+      }
+    });
+
+    this.api = new TwitterApi(tokenCache.accessToken, { plugins: [autoRefresherPlugin] });
   }
 
   /**
@@ -65,11 +85,11 @@ module.exports = class TwitterHelper {
       };
     }
 
-    // /** @TODO Remove this when ready to start posting */
-    // return Promise.resolve({ tweet, data: { id: 'itworked', text: status } });
-
-    return this.api.v2
-      .tweet(payload)
-      .catch((reason) => onError(reason));
+    /** @TODO Remove this when ready to start posting */
+    return Promise.resolve({ payload, data: { id: 'itworked', text: status } });
+    //
+    // return this.api.v2
+    //   .tweet(payload)
+    //   .catch((reason) => onError(reason));
   };
 };

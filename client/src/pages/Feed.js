@@ -14,10 +14,6 @@ export default class Feed extends Component {
     };
   }
 
-  componentDidMount() {
-    this.socket = this.props.socket;
-  }
-
   onChangeContent(e) {
     this.setState({ content: e.target.value });
   }
