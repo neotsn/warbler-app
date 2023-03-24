@@ -55,8 +55,6 @@ export default class Twitter {
 
     const fullContent = `${prefix}${this.content}${suffix}`;
 
-    // console.log(fullContent);
-
     this.tweets = new ChirrAppUtils().split(fullContent);
 
     return this.tweets;

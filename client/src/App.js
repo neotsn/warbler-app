@@ -244,7 +244,8 @@ class App extends Component {
         this.auth.getUser();
       },
 
-      onAuthRefresh({ tokens } = {}) {
+      /** @note use the rocket to access 'this' */
+      onAuthRefresh: ({ tokens } = {}) => {
         const { accessToken, refreshToken } = tokens;
         // Read the current values
         const twitterTokens = this.db.getField({ field: DB_TABLES.TWITTER_TOKENS });

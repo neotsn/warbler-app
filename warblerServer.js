@@ -11,6 +11,8 @@ const { onError } = require('./helpers/ResponseHelper');
 
 // Prepare for Environmental Variables
 require('dotenv').config();
+// Use environment variables
+const { TWITTER_CLIENT_CONFIG } = require('./config.js');
 
 // <1> Serialization and deserialization
 passport.serializeUser((user, done) => done(null, user));
@@ -166,7 +168,7 @@ app.post(API_ENDPOINTS.TWITTER_STATUS_UPDATE, addSocketId, (req, res) => {
     const { status, replyToId } = req.query;
 
     try {
-      new TwitterHelper({ req, socket })
+      new TwitterHelper({ req, socket, credentials: TWITTER_CLIENT_CONFIG })
         .postStatus({
           status,
           onError: (reason) => onError(socket, reason),
@@ -191,7 +193,7 @@ app.get(API_ENDPOINTS.TWITTER_USER_GET, addSocketId, (req, res) => {
 
     try {
       const { userId } = req.query;
-      new TwitterHelper({ req, socket })
+      new TwitterHelper({ req, socket, credentials: TWITTER_CLIENT_CONFIG })
         .getUser({
           userId,
           onError: (error) => onError(socket, error)

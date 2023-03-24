@@ -1,33 +1,27 @@
 const { SOCKET_EVENTS } = require('../client/src/constants');
-const { TWITTER_CLIENT_CONFIG } = require('../config');
 const { TwitterApi } = require('twitter-api-v2');
 const { TwitterApiAutoTokenRefresher } = require('@twitter-api-v2/plugin-token-refresher');
 
 /** Handles the Twitter API interactions  */
 module.exports = class TwitterHelper {
-  constructor({ req, socket } = {}) {
+  constructor({ req, socket, credentials } = {}) {
     /** @todo check what is needed for this */
     const { accessToken, refreshToken } = req.query;
-
-    const tokenCache = {
-      accessToken,
-      refreshToken
-    };
+    const { clientId } = credentials;
 
     const autoRefresherPlugin = new TwitterApiAutoTokenRefresher({
-      refreshToken: tokenCache.refreshToken,
-      refreshCredentials: TWITTER_CLIENT_CONFIG,
-      onTokenUpdate(token) {
-        console.log('New Token', token);
-
-        tokenCache.accessToken = token.accessToken;
-        tokenCache.refreshToken = token.refreshToken;
-
-        socket.emit(SOCKET_EVENTS.TWITTER_AUTH_REFRESH, token);
+      refreshToken,
+      refreshCredentials: credentials,
+      onTokenUpdate(tokens) {
+        socket.emit(SOCKET_EVENTS.TWITTER_AUTH_REFRESH, tokens);
+      },
+      onTokenRefreshError(error) {
+        socket.emit(SOCKET_EVENTS.ERROR, 'Unable to refresh authentication token with Twitter.');
+        console.error('Refresh error', error);
       }
     });
 
-    this.api = new TwitterApi(tokenCache.accessToken, { plugins: [autoRefresherPlugin] });
+    this.api = new TwitterApi(clientId, { plugins: [autoRefresherPlugin] });
   }
 
   /**
