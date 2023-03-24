@@ -8,7 +8,6 @@ const { Strategy } = require('@superfaceai/passport-twitter-oauth2');
 const { URLS, API_ENDPOINTS, SOCKET_EVENTS } = require('./client/src/constants');
 const { createServer } = require('http');
 const { onError } = require('./helpers/ResponseHelper');
-const Tweets = require('./helpers/Tweets');
 
 // Prepare for Environmental Variables
 require('dotenv').config();
@@ -18,36 +17,33 @@ passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
 // Use the Twitter OAuth2 strategy within Passport
-passport.use(
-  new Strategy(
-    {
-      clientID: process.env.TWITTER_OAUTH2_CLIENTID,
-      clientSecret: process.env.TWITTER_OAUTH2_CLIENTSECRET,
-      clientType: 'confidential',
-      callbackURL: `${process.env.BASE_API_URL}/twitter/callback`,
-      passReqToCallback: true
-    },
-    // <3> Verify callback
-    (req, accessToken, refreshToken, profile, done) => {
-      const { session } = req;
-      const { socketId } = session || {};
-      // const { state, code } = req.query;
-      const { id: userId, username: username } = profile;
+passport.use(new Strategy(
+  {
+    clientID: process.env.TWITTER_OAUTH2_CLIENTID,
+    clientSecret: process.env.TWITTER_OAUTH2_CLIENTSECRET,
+    clientType: 'confidential',
+    callbackURL: `${process.env.BASE_API_URL}/twitter/callback`,
+    passReqToCallback: true
+  },
+  (req, accessToken, refreshToken, profile, done) => {
+    const { session } = req;
+    const { socketId } = session || {};
+    // const { state, code } = req.query;
+    const { id: userId, username: username } = profile;
 
-      return done(null, {
-        tokens: {
-          accessToken,
-          refreshToken
-          // state,
-          // code
-        },
-        socketId,
-        profile,
-        userData: { userId, username }
-      });
-    }
-  )
-);
+    return done(null, {
+      tokens: {
+        accessToken,
+        refreshToken
+        // state,
+        // code
+      },
+      socketId,
+      profile,
+      userData: { userId, username }
+    });
+  }
+));
 
 /**
  * Middleware
@@ -167,22 +163,17 @@ app.get(API_ENDPOINTS.TWITTER_AUTH_CALLBACK, twitterAuth, (req, res) => {
 app.post(API_ENDPOINTS.TWITTER_STATUS_UPDATE, addSocketId, (req, res) => {
   verifySocket(req, res, async (req, res) => {
     const socket = initSocket(req);
+    const { status, replyToId } = req.query;
 
     try {
-      const { status } = req.query;
-      /** @todo Handle reply/thread functionality */
-      const replyToId = null;
-
-      new TwitterHelper({ req })
+      new TwitterHelper({ req, socket })
         .postStatus({
           status,
           onError: (reason) => onError(socket, reason),
           replyToId
         })
         .then((response) => {
-          // const response = { tweet, data: { id: '123456789', text: status } };
-          const { tweet, data } = response;
-          console.log(tweet);
+          res.end(response.data);
         });
     } catch (e) {
       onError(socket, e);
@@ -200,7 +191,7 @@ app.get(API_ENDPOINTS.TWITTER_USER_GET, addSocketId, (req, res) => {
 
     try {
       const { userId } = req.query;
-      new TwitterHelper({ req })
+      new TwitterHelper({ req, socket })
         .getUser({
           userId,
           onError: (error) => onError(socket, error)

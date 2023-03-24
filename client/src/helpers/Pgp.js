@@ -15,13 +15,12 @@ export default class Pgp {
 
     const message = await openpgp.createMessage({ text });
 
-    const detachedSignature = await openpgp.sign({
+    // Returns a detached signature string for .then((signature) => {})
+    return await openpgp.sign({
       message, // Message object
       signingKeys: privateKey,
       detached: true
     });
-
-    return detachedSignature;
   }
 
   /** Requires a detatchedSignature to be provided, and technically the public key of the signer */

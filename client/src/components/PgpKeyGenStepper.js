@@ -101,11 +101,11 @@ class PgpKeyGenStepper extends Component {
     this.setState({ curve: e.target.value });
   }
 
-  onChangePassphrase({ passphrase }) {
+  onChangePassphrase({ passphrase } = {}) {
     this.setState({ passphrase });
   }
 
-  onChangeUserIds({ userIDs }) {
+  onChangeUserIds({ userIDs } = {}) {
     this.setState({ userIDs });
   }
 

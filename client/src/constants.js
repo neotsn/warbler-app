@@ -51,5 +51,6 @@ exports.SOCKET_EVENTS = {
  */
 exports.URLS = {
   API_SERVER: 'http://127.0.0.1:3100',
-  CLIENT: 'http://127.0.0.1:3000'
+  CLIENT: 'http://127.0.0.1:3000',
+  SHORTENER: 'https://v.gd/create.php'
 };
