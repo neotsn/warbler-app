@@ -9,7 +9,4 @@ exports.TWITTER_PASSPORT_CONFIG = {
 exports.TWITTER_CLIENT_CONFIG = {
   clientId: process.env.TWITTER_OAUTH2_CLIENTID,
   clientSecret: process.env.TWITTER_OAUTH2_CLIENTSECRET,
-  // Filled in with the passport token & secret
-  access_token_key: null,
-  access_token_secret: null
 };
