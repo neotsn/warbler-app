@@ -88,6 +88,7 @@ class App extends Component {
       .on(SOCKET_EVENTS.SUCCESS, (success) => this.setState({ success }))
       .on(SOCKET_EVENTS.ERROR, (error) => this.setState({ error }))
       .on(SOCKET_EVENTS.TWITTER_AUTH, (response) => this.twitter.onAuth({ response }))
+      .on(SOCKET_EVENTS.TWITTER_AUTH_REFRESH, (tokens) => this.twitter.onAuthRefresh({ tokens }))
       .on(SOCKET_EVENTS.TWITTER_USER_GET, (user) => this.twitter.onUser({ user }))
       // Update the user record in state with the changes sent to the server
       .on(SOCKET_EVENTS.TWITTER_USER_UPDATE, (user) => this.setState({ user }));
@@ -242,6 +243,20 @@ class App extends Component {
         // Immediately go fetch the User Object...
         this.auth.getUser();
       },
+
+      onAuthRefresh({ tokens } = {}) {
+        const { accessToken, refreshToken } = tokens;
+        // Read the current values
+        const twitterTokens = this.db.getField({ field: DB_TABLES.TWITTER_TOKENS });
+        // Update with provided value
+        twitterTokens[DB_FIELDS.TWITTER_TOKENS.ACCESS_TOKEN] = accessToken;
+        twitterTokens[DB_FIELDS.TWITTER_TOKENS.REFRESH_TOKEN] = refreshToken;
+        // Set the changed tokens
+        this.db.setField({ field: DB_TABLES.TWITTER_TOKENS, value: twitterTokens });
+        // // Request again
+        // this.auth.getUser();
+      },
+
       /** Handle sending the Tweet/Status Update */
       onSubmitTweet: ({ tweets } = {}) => {
         let replyToId = null;
