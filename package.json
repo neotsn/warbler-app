@@ -22,7 +22,7 @@
     "express-session": "^1.17.3",
     "font-awesome": "^4.7.0",
     "http": "^0.0.1-security",
-    "nodemon": "^2.0.21",
+    "nodemon": "^3.1.4",
     "oauth": "^0.10.0",
     "openpgp": "^5.7.0",
     "passport": "^0.6.0",
