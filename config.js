@@ -1,13 +1,12 @@
-const clientUrl = 'http://127.0.0.1:3000';
-const callbackUrl = 'http://127.0.0.1:3100';
+const { URLS } = require('./client/src/constants');
 
-exports.URLS = {
-  clientUrl,
-  callbackUrl,
-}
+exports.TWITTER_PASSPORT_CONFIG = {
+  consumerKey: process.env.TWITTER_CONSUMER_KEY,
+  consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+  callbackUrl: `${URLS.API_SERVER}${URLS.TWITTER_AUTH_CALLBACK}`
+};
 
-exports.TWITTER_CONFIG = {
-  consumerKey: process.env.TWITTER_KEY,
-  consumerSecret: process.env.TWITTER_SECRET,
-  callbackUrl
+exports.TWITTER_CLIENT_CONFIG = {
+  clientId: process.env.TWITTER_OAUTH2_CLIENTID,
+  clientSecret: process.env.TWITTER_OAUTH2_CLIENTSECRET,
 };
