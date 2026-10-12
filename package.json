@@ -15,7 +15,7 @@
     "@passport-js/passport-twitter": "^1.0.10",
     "@superfaceai/passport-twitter-oauth2": "^1.2.4",
     "@twitter-api-v2/plugin-token-refresher": "^1.0.0",
-    "concurrently": "^10.0.4",
+    "concurrently": "^10.0.6",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "5.2.1",
